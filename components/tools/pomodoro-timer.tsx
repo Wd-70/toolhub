@@ -198,17 +198,20 @@ export default function PomodoroTimer() {
   // 개별 상태 업데이트 래퍼 함수들
   const updateMode = (newMode: PomodoroMode) => {
     setMode(newMode);
-    setTimeout(updatePomodoroState, 0);
+    // 변경 후 즉시 Context 업데이트
+    updatePomodoroState();
   };
 
   const updateTimeLeft = (newTimeLeft: number) => {
     setTimeLeft(newTimeLeft);
-    setTimeout(updatePomodoroState, 0);
+    // 변경 후 즉시 Context 업데이트
+    updatePomodoroState();
   };
 
   const updateIsActive = (newIsActive: boolean) => {
     setIsActive(newIsActive);
-    setTimeout(updatePomodoroState, 0);
+    // 변경 후 즉시 Context 업데이트
+    updatePomodoroState();
 
     // 활성화 상태 변경 시 히스토리 기록
     if (newIsActive) {
@@ -220,7 +223,8 @@ export default function PomodoroTimer() {
 
   const updateIsPaused = (newIsPaused: boolean) => {
     setIsPaused(newIsPaused);
-    setTimeout(updatePomodoroState, 0);
+    // 변경 후 즉시 Context 업데이트
+    updatePomodoroState();
   };
 
   useEffect(() => {
@@ -251,6 +255,79 @@ export default function PomodoroTimer() {
       }
     };
   }, []);
+
+  // Context 상태가 변경될 때마다 로컬 상태 동기화
+  useEffect(() => {
+    // 새로운 상태가 있을 때만 실행
+    if (toolState?.data) {
+      const {
+        mode: contextMode,
+        timeLeft: contextTimeLeft,
+        isActive: contextIsActive,
+        isPaused: contextIsPaused,
+        workDuration: contextWorkDuration,
+        breakDuration: contextBreakDuration,
+        longBreakDuration: contextLongBreakDuration,
+        sessions: contextSessions,
+        soundEnabled: contextSoundEnabled,
+        autoStartNextSession: contextAutoStartNextSession,
+        workSessionsBeforeLongBreak: contextWorkSessionsBeforeLongBreak,
+        completedWorkSessions: contextCompletedWorkSessions,
+        showNotification: contextShowNotification,
+        dailyGoal: contextDailyGoal,
+        todayCompletedSessions: contextTodayCompletedSessions,
+        currentSessionCount: contextCurrentSessionCount,
+        volume: contextVolume,
+        testMode: contextTestMode,
+        testDuration: contextTestDuration,
+        showTestControls: contextShowTestControls,
+      } = toolState.data;
+
+      // 값이 다를 때만 상태 업데이트
+      if (mode !== contextMode) setMode(contextMode);
+      if (timeLeft !== contextTimeLeft) setTimeLeft(contextTimeLeft);
+      if (isActive !== contextIsActive) setIsActive(contextIsActive);
+      if (isPaused !== contextIsPaused) setIsPaused(contextIsPaused);
+      if (workDuration !== contextWorkDuration)
+        setWorkDuration(contextWorkDuration);
+      if (breakDuration !== contextBreakDuration)
+        setBreakDuration(contextBreakDuration);
+      if (longBreakDuration !== contextLongBreakDuration)
+        setLongBreakDuration(contextLongBreakDuration);
+      if (soundEnabled !== contextSoundEnabled)
+        setSoundEnabled(contextSoundEnabled);
+      if (autoStartNextSession !== contextAutoStartNextSession)
+        setAutoStartNextSession(contextAutoStartNextSession);
+      if (workSessionsBeforeLongBreak !== contextWorkSessionsBeforeLongBreak)
+        setWorkSessionsBeforeLongBreak(contextWorkSessionsBeforeLongBreak);
+      if (completedWorkSessions !== contextCompletedWorkSessions)
+        setCompletedWorkSessions(contextCompletedWorkSessions);
+      if (showNotification !== contextShowNotification)
+        setShowNotification(contextShowNotification);
+      if (dailyGoal !== contextDailyGoal) setDailyGoal(contextDailyGoal);
+      if (todayCompletedSessions !== contextTodayCompletedSessions)
+        setTodayCompletedSessions(contextTodayCompletedSessions);
+      if (currentSessionCount !== contextCurrentSessionCount)
+        setCurrentSessionCount(contextCurrentSessionCount);
+      if (volume !== contextVolume) setVolume(contextVolume);
+      if (testMode !== contextTestMode) setTestMode(contextTestMode);
+      if (testDuration !== contextTestDuration)
+        setTestDuration(contextTestDuration);
+      if (showTestControls !== contextShowTestControls)
+        setShowTestControls(contextShowTestControls);
+
+      // 활성화된 타이머가 이전에 멈춰있던 경우 재시작
+      if (contextIsActive && !isActive && !contextIsPaused) {
+        // 다음 렌더 사이클에서 타이머 시작
+        setTimeout(() => {
+          if (timeLeft > 0) {
+            setIsActive(true);
+            setIsPaused(false);
+          }
+        }, 0);
+      }
+    }
+  }, [toolState?.data]);
 
   // 테스트 모드가 변경될 때 타이머 시간 업데이트
   useEffect(() => {
@@ -343,13 +420,11 @@ export default function PomodoroTimer() {
                 : longBreakDuration * 60;
 
               // 모드 변경과 시간 설정을 함께 처리
-              setTimeout(() => {
-                updateMode(nextMode);
-                updateTimeLeft(nextModeTime);
-                // Context 상태 업데이트
-                addHistoryEntry("pomodoro", "update", sessionDuration);
-                updatePomodoroState();
-              }, 0);
+              updateMode(nextMode);
+              setTimeLeft(nextModeTime); // 여기서는 로컬 상태만 업데이트 (중복 방지)
+              // Context 상태 업데이트
+              addHistoryEntry("pomodoro", "update", sessionDuration);
+              updatePomodoroState();
             } else {
               // 휴식 모드(break 또는 longBreak)가 끝나면 work 모드로
               const nextModeTime = testMode ? testDuration : workDuration * 60;
@@ -365,13 +440,11 @@ export default function PomodoroTimer() {
               }
 
               // 모드 변경과 시간 설정을 함께 처리
-              setTimeout(() => {
-                updateMode("work");
-                updateTimeLeft(nextModeTime);
-                // Context 상태 업데이트
-                addHistoryEntry("pomodoro", "update", sessionDuration);
-                updatePomodoroState();
-              }, 0);
+              updateMode("work");
+              setTimeLeft(nextModeTime); // 여기서는 로컬 상태만 업데이트 (중복 방지)
+              // Context 상태 업데이트
+              addHistoryEntry("pomodoro", "update", sessionDuration);
+              updatePomodoroState();
             }
 
             if (soundEnabled && audioRef.current) {
@@ -435,17 +508,23 @@ export default function PomodoroTimer() {
             updateIsActive(autoStartNextSession);
             return 0;
           }
+
+          // 타이머가 1초씩 감소하는 일반적인 경우
           const newTimeLeft = prev - 1;
-          updateTimeLeft(newTimeLeft);
+
+          // 매 업데이트마다 Context를 업데이트하지 않고,
+          // 5초마다 한 번씩만 Context 업데이트 (성능 최적화)
+          if (newTimeLeft % 5 === 0) {
+            // setTimeout 없이 즉시 업데이트
+            updatePomodoroState();
+          }
+
           return newTimeLeft;
         });
       }, 1000);
     } else if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-
-    // 타이머 상태가 변경되면 컨텍스트에 저장
-    updatePomodoroState();
 
     return () => {
       if (timerRef.current) {
@@ -570,10 +649,10 @@ export default function PomodoroTimer() {
       // 현재 모드가 work이고 타이머가 활성화되지 않은 경우 시간 업데이트
       if (mode === "work" && !isActive) {
         updateTimeLeft(value * 60);
+      } else {
+        // 즉시 상태 업데이트
+        updatePomodoroState();
       }
-
-      // 상태 업데이트
-      setTimeout(() => updatePomodoroState(), 0);
     }
   };
 
@@ -588,10 +667,10 @@ export default function PomodoroTimer() {
       // 현재 모드가 break이고 타이머가 활성화되지 않은 경우 시간 업데이트
       if (mode === "break" && !isActive) {
         updateTimeLeft(value * 60);
+      } else {
+        // 즉시 상태 업데이트
+        updatePomodoroState();
       }
-
-      // 상태 업데이트
-      setTimeout(() => updatePomodoroState(), 0);
     }
   };
 
@@ -606,10 +685,10 @@ export default function PomodoroTimer() {
       // 현재 모드가 longBreak이고 타이머가 활성화되지 않은 경우 시간 업데이트
       if (mode === "longBreak" && !isActive) {
         updateTimeLeft(value * 60);
+      } else {
+        // 즉시 상태 업데이트
+        updatePomodoroState();
       }
-
-      // 상태 업데이트
-      setTimeout(() => updatePomodoroState(), 0);
     }
   };
 
@@ -622,10 +701,10 @@ export default function PomodoroTimer() {
       // 테스트 모드이고 타이머가 활성화되지 않은 경우 시간 업데이트
       if (testMode && !isActive) {
         updateTimeLeft(value);
+      } else {
+        // 즉시 상태 업데이트
+        updatePomodoroState();
       }
-
-      // 상태 업데이트
-      setTimeout(() => updatePomodoroState(), 0);
     }
   };
 
@@ -635,7 +714,7 @@ export default function PomodoroTimer() {
     if (!isNaN(numValue) && numValue > 0) {
       setWorkSessionsBeforeLongBreak(numValue);
       // 상태 업데이트
-      setTimeout(() => updatePomodoroState(), 0);
+      updatePomodoroState();
     }
   };
 
@@ -645,7 +724,7 @@ export default function PomodoroTimer() {
     if (!isNaN(value) && value > 0) {
       setDailyGoal(value);
       // 상태 업데이트
-      setTimeout(() => updatePomodoroState(), 0);
+      updatePomodoroState();
     }
   };
 
@@ -669,10 +748,10 @@ export default function PomodoroTimer() {
             : longBreakDuration * 60
         );
       }
+    } else {
+      // 즉시 상태 업데이트
+      updatePomodoroState();
     }
-
-    // 상태 업데이트
-    setTimeout(() => updatePomodoroState(), 0);
   };
 
   // 타이머 빨리 감기 (테스트용)
