@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -117,13 +117,50 @@ export default function PomodoroTimer() {
 
   // 도구 상태 가져오기
   const toolState = getToolState<PomodoroTimerState>("pomodoro");
-  const state = toolState?.data || defaultPomodoroState;
+
+  // 첫 렌더링 여부 체크 (상태 초기화에 사용)
+  const isFirstRender = useRef(true);
 
   // 로컬 상태 (컨텍스트로 관리하지 않는 UI 관련 상태)
   const [notificationPermission, setNotificationPermission] = useState<
     NotificationPermission | "default"
   >("default");
   const [isClient, setIsClient] = useState<boolean>(false);
+
+  // 로컬 상태에 기본값 설정 (toolState가 없을 때 기본값 사용)
+  const state = useMemo(() => {
+    // 새로운 세션 여부 확인 (날짜가 바뀌었는지)
+    let initialState = { ...defaultPomodoroState };
+
+    if (toolState?.data) {
+      // Context에 저장된 상태가 있으면 사용
+      initialState = { ...toolState.data };
+
+      // 날짜 체크 - 이전 날짜와 현재 날짜가 다르면 일일 통계 리셋
+      const today = new Date().toDateString();
+      const lastActiveDate = localStorage.getItem("pomodoro_last_active_date");
+
+      if (lastActiveDate !== today) {
+        // 새로운 날짜라면 일일 통계 초기화
+        initialState.todayCompletedSessions = 0;
+        localStorage.setItem("pomodoro_last_active_date", today);
+      }
+
+      // 보존된 상태가 활성 상태라면 검증 (브라우저 새로고침 등으로 타이머가 죽었을 수 있음)
+      if (initialState.isActive) {
+        // 타이머가 활성 상태였지만 새로 로드될 때는 일시정지 상태로 설정
+        initialState.isPaused = true;
+      }
+    } else {
+      // 최초 실행 시 오늘 날짜 저장
+      localStorage.setItem(
+        "pomodoro_last_active_date",
+        new Date().toDateString()
+      );
+    }
+
+    return initialState;
+  }, [toolState?.data]);
 
   // 로컬 상태로 사용하던 것을 컨텍스트로 관리
   const [mode, setMode] = useState<PomodoroMode>(state.mode);
@@ -248,6 +285,29 @@ export default function PomodoroTimer() {
       }
     }
 
+    // 컴포넌트 마운트 시 상태 초기화 (최초 1회)
+    if (isFirstRender.current) {
+      // 중요: 여기서는 isFirstRender를 false로 설정하지 않음
+      // Context 상태 동기화 useEffect에서 처리함
+
+      // 지속된 상태가 있고 타이머가 활성화된 상태라면,
+      // 브라우저 새로고침 등으로 타이머가 중단됐을 수 있으므로 일시정지 상태로 설정
+      if (state.isActive) {
+        // 타이머 시간이 0이 아닌 경우 일시정지 상태로 설정
+        if (state.timeLeft > 0) {
+          console.log("타이머 일시정지 상태로 초기화 (기존 활성 상태)");
+          setIsPaused(true);
+        } else {
+          // 타이머 시간이 0인 경우 타이머 비활성화
+          console.log("타이머 비활성화 (기존 타이머 완료)");
+          setIsActive(false);
+        }
+
+        // 상태 변경 후 Context 업데이트
+        setTimeout(() => updatePomodoroState(), 0);
+      }
+    }
+
     // 타이머 초기화 및 정리
     return () => {
       if (timerRef.current) {
@@ -260,6 +320,12 @@ export default function PomodoroTimer() {
   useEffect(() => {
     // 새로운 상태가 있을 때만 실행
     if (toolState?.data) {
+      // 첫 렌더링에서는 이미 useMemo에서 초기화했으므로 체크 자체를 건너뜀
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+      }
+
       const {
         mode: contextMode,
         timeLeft: contextTimeLeft,
@@ -286,14 +352,36 @@ export default function PomodoroTimer() {
       // 값이 다를 때만 상태 업데이트
       if (mode !== contextMode) setMode(contextMode);
       if (timeLeft !== contextTimeLeft) setTimeLeft(contextTimeLeft);
-      if (isActive !== contextIsActive) setIsActive(contextIsActive);
-      if (isPaused !== contextIsPaused) setIsPaused(contextIsPaused);
+
+      // 활성 상태와 일시정지 상태는 함께 처리
+      const activeStateChanged =
+        isActive !== contextIsActive || isPaused !== contextIsPaused;
+      if (activeStateChanged) {
+        // 타이머가 외부에서 활성화된 경우, 타이머 시작 또는 일시정지 처리
+        setIsActive(contextIsActive);
+        setIsPaused(contextIsPaused);
+
+        // 타이머가 활성화되면 타이머 시작 (setInterval은 isActive useEffect에서 처리됨)
+        // 활성화되지 않았으나 변경이 있는 경우 (타이머가 중지된 경우)
+        if (!contextIsActive && timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+      }
+
+      // 나머지 상태 업데이트
       if (workDuration !== contextWorkDuration)
         setWorkDuration(contextWorkDuration);
       if (breakDuration !== contextBreakDuration)
         setBreakDuration(contextBreakDuration);
       if (longBreakDuration !== contextLongBreakDuration)
         setLongBreakDuration(contextLongBreakDuration);
+
+      // 세션 정보는 참조만 비교하면 불충분하므로 내용을 비교
+      const sessionsChanged =
+        JSON.stringify(sessions) !== JSON.stringify(contextSessions);
+      if (sessionsChanged) setSessions(contextSessions);
+
       if (soundEnabled !== contextSoundEnabled)
         setSoundEnabled(contextSoundEnabled);
       if (autoStartNextSession !== contextAutoStartNextSession)
@@ -315,17 +403,6 @@ export default function PomodoroTimer() {
         setTestDuration(contextTestDuration);
       if (showTestControls !== contextShowTestControls)
         setShowTestControls(contextShowTestControls);
-
-      // 활성화된 타이머가 이전에 멈춰있던 경우 재시작
-      if (contextIsActive && !isActive && !contextIsPaused) {
-        // 다음 렌더 사이클에서 타이머 시작
-        setTimeout(() => {
-          if (timeLeft > 0) {
-            setIsActive(true);
-            setIsPaused(false);
-          }
-        }, 0);
-      }
     }
   }, [toolState?.data]);
 
