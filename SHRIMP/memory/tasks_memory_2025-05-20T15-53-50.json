@@ -1,0 +1,104 @@
+{
+  "tasks": [
+    {
+      "id": "d95baeed-4e2d-408a-bbdf-c9efe130f0a4",
+      "name": "도구 상태 관리를 위한 타입 정의 구현",
+      "description": "도구 상태 관리에 필요한 타입스크립트 타입 정의를 구현합니다. 도구 ID, 상태 데이터, 마지막 사용 시간 등을 포함한 ToolState 타입과 Context 관련 타입을 정의합니다.",
+      "notes": "기존 훅 파일(use-mobile.tsx, use-toast.ts)의 패턴을 참고하여 일관성 있게 구현합니다.",
+      "status": "已完成",
+      "dependencies": [],
+      "createdAt": "2025-05-20T08:37:05.033Z",
+      "updatedAt": "2025-05-20T08:38:00.894Z",
+      "relatedFiles": [
+        {
+          "path": "hooks/use-tool-state.tsx",
+          "type": "CREATE",
+          "description": "도구 상태 관리를 위한 Context와 Provider를 구현할 파일",
+          "lineStart": 1,
+          "lineEnd": 50
+        },
+        {
+          "path": "hooks/use-mobile.tsx",
+          "type": "REFERENCE",
+          "description": "기존 훅 패턴 참고용 파일"
+        },
+        {
+          "path": "hooks/use-toast.ts",
+          "type": "REFERENCE",
+          "description": "기존 상태 관리 패턴 참고용 파일"
+        }
+      ],
+      "implementationGuide": "hooks/use-tool-state.tsx 파일을 생성하고 다음 타입들을 정의합니다:\n\n1. ToolId 타입: 도구 ID를 정의하는 문자열 리터럴 타입\n2. ToolState 인터페이스: 각 도구의 상태 정보를 담는 타입\n3. ToolHistory 인터페이스: 도구 사용 기록을 담는 타입\n4. ToolStateContextType 인터페이스: Context에서 제공할 상태와 함수들을 정의하는 타입\n\n기존 프로젝트의 명명 규칙과 코드 스타일을 준수하며, 타입스크립트의 타입 안전성을 보장하도록 구현합니다.",
+      "verificationCriteria": "1. 모든 필요한 타입이 정의되어 있는지 확인\n2. 타입스크립트 타입 안전성이 보장되는지 확인\n3. 기존 프로젝트의 명명 규칙과 코드 스타일을 준수하는지 확인\n4. 도구 ID가 app/tools/[toolId]/page.tsx에 정의된 도구 목록과 일치하는지 확인",
+      "analysisResult": "도구 상태 관리 Context API 구현은 Next.js 기반의 ToolHub 프로젝트에서 여러 도구(포모도로 타이머, 마크다운 에디터, 계산기 등)의 상태를 글로벌하게 관리하고 유지하기 위한 기능입니다. React의 Context API를 활용하여 도구별 상태를 관리하고, localStorage를 통해 브라우저 세션 간에도 상태가 유지되도록 구현합니다. 타입스크립트의 타입 안전성을 보장하고, 도구별 상태 저장/복원, 사용 기록 관리, 도구 간 데이터 공유 기능을 제공합니다.",
+      "summary": "도구 상태 관리를 위한 타입 정의를 성공적으로 구현했습니다. 모든 필요한 타입(ToolId, ToolState, ToolHistory, SharedData, ToolStateContextType)을 정의하였고, 타입스크립트의 타입 안전성을 보장했습니다. 기존 프로젝트의 명명 규칙과 코드 스타일을 준수하였으며, 도구 ID가 app/tools/[toolId]/page.tsx에 정의된 도구 목록과 일치하도록 구현했습니다.",
+      "completedAt": "2025-05-20T08:38:00.893Z"
+    },
+    {
+      "id": "358a6abc-29b1-4559-9cd8-a008c6f54765",
+      "name": "ToolStateContext 및 Provider 구현",
+      "description": "React Context API를 활용하여 도구 상태 관리를 위한 Context와 Provider 컴포넌트를 구현합니다. 상태 초기화, 업데이트, 저장 및 불러오기 기능을 포함합니다.",
+      "notes": "localStorage 사용 시 브라우저 환경 체크 로직을 포함하여 SSR 환경에서 오류가 발생하지 않도록 합니다.",
+      "status": "已完成",
+      "dependencies": [
+        {
+          "taskId": "d95baeed-4e2d-408a-bbdf-c9efe130f0a4"
+        }
+      ],
+      "createdAt": "2025-05-20T08:37:05.033Z",
+      "updatedAt": "2025-05-20T08:48:24.795Z",
+      "relatedFiles": [
+        {
+          "path": "hooks/use-tool-state.tsx",
+          "type": "TO_MODIFY",
+          "description": "Context와 Provider를 구현할 파일",
+          "lineStart": 50,
+          "lineEnd": 150
+        },
+        {
+          "path": "components/theme-provider.tsx",
+          "type": "REFERENCE",
+          "description": "기존 Provider 패턴 참고용 파일"
+        }
+      ],
+      "implementationGuide": "hooks/use-tool-state.tsx 파일에 다음 내용을 구현합니다:\n\n1. ToolStateContext 생성: createContext를 사용하여 Context 생성\n2. useToolState 훅 구현: useContext를 사용하여 Context에 접근하는 커스텀 훅 제공\n3. ToolStateProvider 컴포넌트 구현:\n   - useState를 사용하여 도구별 상태 관리\n   - useEffect를 사용하여 localStorage에서 초기 상태 로드\n   - 상태 변경 시 localStorage에 저장하는 로직 구현\n   - 도구 사용 기록 추적 및 관리 기능 구현\n   - 도구 간 데이터 공유 메커니즘 구현\n\n기존 프로젝트의 Provider 패턴(theme-provider.tsx)을 참고하여 일관성 있게 구현합니다.",
+      "verificationCriteria": "1. Context와 Provider가 정상적으로 구현되었는지 확인\n2. localStorage를 활용한 상태 영속성이 구현되었는지 확인\n3. 도구별 상태 저장 및 복원 기능이 동작하는지 확인\n4. 도구 사용 기록 관리 기능이 구현되었는지 확인\n5. 도구 간 데이터 공유 기능이 구현되었는지 확인\n6. SSR 환경에서 오류가 발생하지 않는지 확인",
+      "analysisResult": "도구 상태 관리 Context API 구현은 Next.js 기반의 ToolHub 프로젝트에서 여러 도구(포모도로 타이머, 마크다운 에디터, 계산기 등)의 상태를 글로벌하게 관리하고 유지하기 위한 기능입니다. React의 Context API를 활용하여 도구별 상태를 관리하고, localStorage를 통해 브라우저 세션 간에도 상태가 유지되도록 구현합니다. 타입스크립트의 타입 안전성을 보장하고, 도구별 상태 저장/복원, 사용 기록 관리, 도구 간 데이터 공유 기능을 제공합니다.",
+      "summary": "ToolStateContext 및 Provider를 성공적으로 구현했습니다. 기존 타입 정의를 기반으로 Context 생성, useToolState 커스텀 훅, ToolStateProvider 컴포넌트를 개발했습니다. localStorage를 통한 상태 영속성, 도구별 상태 관리, 사용 기록 추적, 도구 간 데이터 공유 기능을 모두 구현했습니다. SSR 환경에서 오류가 발생하지 않도록 클라이언트 사이드 체크 로직을 포함했고, 메모이제이션을 통해 성능을 최적화했습니다.",
+      "completedAt": "2025-05-20T08:48:24.794Z"
+    },
+    {
+      "id": "d2201e63-46cc-4282-8fd9-0fc94896dcf0",
+      "name": "ToolStateProvider를 애플리케이션에 적용",
+      "description": "구현한 ToolStateProvider를 애플리케이션의 루트 레이아웃에 적용하여 모든 컴포넌트에서 도구 상태에 접근할 수 있도록 합니다.",
+      "notes": "Provider의 중첩 순서가 중요할 수 있으므로 ThemeProvider 내부에 ToolStateProvider를 배치합니다.",
+      "status": "已完成",
+      "dependencies": [
+        {
+          "taskId": "358a6abc-29b1-4559-9cd8-a008c6f54765"
+        }
+      ],
+      "createdAt": "2025-05-20T08:37:05.033Z",
+      "updatedAt": "2025-05-20T09:27:00.025Z",
+      "relatedFiles": [
+        {
+          "path": "app/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "ToolStateProvider를 추가할 레이아웃 파일",
+          "lineStart": 1,
+          "lineEnd": 29
+        },
+        {
+          "path": "hooks/use-tool-state.tsx",
+          "type": "REFERENCE",
+          "description": "구현한 ToolStateProvider를 임포트할 파일"
+        }
+      ],
+      "implementationGuide": "app/layout.tsx 파일을 수정하여 ToolStateProvider를 추가합니다:\n\n1. use-tool-state.tsx에서 ToolStateProvider 임포트\n2. ThemeProvider 내부에 ToolStateProvider 추가\n3. children을 ToolStateProvider로 감싸기\n\n기존 Provider 적용 패턴을 따라 일관성 있게 구현합니다.",
+      "verificationCriteria": "1. app/layout.tsx에 ToolStateProvider가 정상적으로 추가되었는지 확인\n2. Provider 중첩 순서가 적절한지 확인\n3. 애플리케이션이 정상적으로 로드되는지 확인\n4. 컴파일 오류나 런타임 오류가 없는지 확인",
+      "analysisResult": "도구 상태 관리 Context API 구현은 Next.js 기반의 ToolHub 프로젝트에서 여러 도구(포모도로 타이머, 마크다운 에디터, 계산기 등)의 상태를 글로벌하게 관리하고 유지하기 위한 기능입니다. React의 Context API를 활용하여 도구별 상태를 관리하고, localStorage를 통해 브라우저 세션 간에도 상태가 유지되도록 구현합니다. 타입스크립트의 타입 안전성을 보장하고, 도구별 상태 저장/복원, 사용 기록 관리, 도구 간 데이터 공유 기능을 제공합니다.",
+      "summary": "ToolStateProvider를 애플리케이션의 루트 레이아웃에 성공적으로 적용했습니다. app/layout.tsx 파일에 ToolStateProvider import를 추가하고, ThemeProvider 내부에 ToolStateProvider를 추가하여 children을 감쌌습니다. 중첩 순서를 적절히 조정하여 ThemeProvider 내부에 ToolStateProvider가 위치하도록 했습니다. 이로써 애플리케이션의 모든 컴포넌트에서 도구 상태에 접근할 수 있게 되었습니다.",
+      "completedAt": "2025-05-20T09:27:00.022Z"
+    }
+  ]
+}
