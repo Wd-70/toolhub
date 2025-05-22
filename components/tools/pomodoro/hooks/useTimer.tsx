@@ -28,16 +28,13 @@ export function useTimer({
   // 타이머 참조
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 시간 저장 참조 (일시정지 시 사용)
-  const savedTimeRef = useRef<number | null>(null);
-
   // 페이지 가시성 감지
   const { isPomodoro } = usePageVisibility();
   const isPomodoroRef = useRef(isPomodoro);
 
   // 외부 duration이 변경되면 타이머 시간 업데이트 (타이머가 실행 중이 아닐 때만)
   useEffect(() => {
-    if (!isActive && savedTimeRef.current === null) {
+    if (!isActive) {
       setTimeLeft(initialDuration);
     }
   }, [initialDuration, isActive]);
@@ -63,16 +60,16 @@ export function useTimer({
     }
   }, []);
 
-  // 타이머 일시정지 함수
+  // 타이머 일시정지 함수 - 현재 timeLeft 값을 그대로 유지
   const pauseTimer = useCallback(() => {
     if (isActive) {
-      console.log("타이머 일시정지 - 현재 시간 저장:", timeLeft);
-      // 현재 시간 저장
-      savedTimeRef.current = timeLeft;
+      console.log("타이머 일시정지 - 현재 시간:", timeLeft);
 
       // 타이머 중지
       stopTimer();
       setIsActive(false);
+
+      // timeLeft 값은 변경하지 않음 - 현재 상태 그대로 유지
     }
   }, [isActive, timeLeft, stopTimer]);
 
@@ -89,17 +86,11 @@ export function useTimer({
       return;
     }
 
-    console.log("타이머 시작");
+    console.log("타이머 시작 - 현재 시간:", timeLeft);
 
-    // 일시정지된 시간이 있으면 그 시간부터 시작
-    if (savedTimeRef.current !== null) {
-      console.log("저장된 시간부터 시작:", savedTimeRef.current);
-      setTimeLeft(savedTimeRef.current);
-      savedTimeRef.current = null;
-    }
-
+    // 현재 timeLeft 값을 그대로 사용 - 일시정지 상태에서 재개할 때 유용
     setIsActive(true);
-  }, [isActive, globalModeEnabled]);
+  }, [isActive, globalModeEnabled, timeLeft]);
 
   // 타이머 토글 함수
   const toggleTimer = useCallback(() => {
@@ -115,7 +106,6 @@ export function useTimer({
     console.log("타이머 리셋");
     stopTimer();
     setIsActive(false);
-    savedTimeRef.current = null;
 
     // 시간 설정
     setTimeLeft(initialDuration);

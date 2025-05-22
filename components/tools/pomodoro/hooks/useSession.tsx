@@ -121,7 +121,13 @@ export function useSession({
   // 모드나 시간 설정이 변경되면 타이머 초기화 (타이머가 실행 중이 아닐 때만)
   useEffect(() => {
     if (!timer.isActive) {
-      timer.setTimeLeft(getCurrentDuration());
+      // 일시정지 상태가 아닐 때만 타이머 시간을 새로 설정
+      // 이렇게 하면 모드 변경 시에도 일시정지된 시간이 유지됨
+      const currentTime = timer.timeLeft;
+      if (currentTime === 0) {
+        // 타이머가 완료되었거나 초기 상태일 때만 초기화
+        timer.setTimeLeft(getCurrentDuration());
+      }
     }
   }, [getCurrentDuration, mode, timer]);
 
@@ -150,11 +156,17 @@ export function useSession({
     // 다음 세션으로 전환
     handleTimerComplete();
 
+    // 다음 세션의 시간으로 타이머 설정 (모드가 변경된 후)
+    timer.setTimeLeft(getCurrentDuration());
+
     // 자동 시작 설정이 켜져 있으면 다음 세션 자동 시작
     if (autoStartNextSession) {
-      timer.startTimer();
+      // 약간의 지연 후 시작 (상태 업데이트가 반영된 후)
+      setTimeout(() => {
+        timer.startTimer();
+      }, 50);
     }
-  }, [timer, handleTimerComplete, autoStartNextSession]);
+  }, [timer, handleTimerComplete, autoStartNextSession, getCurrentDuration]);
 
   return {
     // 세션 상태
