@@ -49,6 +49,26 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
     setWorkSessionsBeforeLongBreak,
   } = usePomodoroContext();
 
+  // 기본값 복원 핸들러
+  const handleResetDefaults = () => {
+    // 먼저 기본 설정값 적용
+    setWorkDuration(25);
+    setBreakDuration(5);
+    setLongBreakDuration(15);
+    setWorkSessionsBeforeLongBreak(4);
+    setAutoStartNextSession(true);
+
+    // 딜레이 후 현재 모드에 맞는 시간 설정
+    // (모드 변경 useEffect가 자동으로 처리하지 못할 경우를 대비)
+    setTimeout(() => {
+      if (!isActive) {
+        const newTime =
+          mode === "work" ? 25 * 60 : mode === "break" ? 5 * 60 : 15 * 60;
+        setTimeLeft(newTime);
+      }
+    }, 50);
+  };
+
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="space-y-2">
@@ -178,18 +198,7 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => {
-            setWorkDuration(25);
-            setBreakDuration(5);
-            setLongBreakDuration(15);
-            setWorkSessionsBeforeLongBreak(4);
-            setAutoStartNextSession(true);
-            if (!isActive) {
-              setTimeLeft(
-                mode === "work" ? 25 * 60 : mode === "break" ? 5 * 60 : 15 * 60
-              );
-            }
-          }}
+          onClick={handleResetDefaults}
           disabled={isActive}
         >
           <Settings className="h-4 w-4 mr-2" />
