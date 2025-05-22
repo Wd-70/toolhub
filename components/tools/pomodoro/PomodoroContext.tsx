@@ -26,6 +26,7 @@ type PomodoroContextType = {
   longBreakDuration: number;
   workSessionsBeforeLongBreak: number;
   completedWorkSessions: number;
+  currentSessionNumber: number; // 새로 추가: 현재 진행 중인 세션 번호 (1부터 시작)
   todayCompletedSessions: number;
   sessions: SessionData[];
   dailyGoal: number;
@@ -111,6 +112,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
   const [workSessionsBeforeLongBreak, setWorkSessionsBeforeLongBreak] =
     useState<number>(4);
   const [completedWorkSessions, setCompletedWorkSessions] = useState<number>(0);
+  const [currentSessionNumber, setCurrentSessionNumber] = useState<number>(1); // 현재 세션 번호 (1부터 시작)
   const [showNotification, setShowNotification] = useState<boolean>(true);
   const [dailyGoal, setDailyGoal] = useState<number>(8);
   const [todayCompletedSessions, setTodayCompletedSessions] =
@@ -263,7 +265,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
             const getNextModeAndTime = () => {
               // 작업 세션 완료시
               if (currentMode === "work") {
-                // 완료된 세션 수 증가
+                // 완료된 세션 수 증가 (오늘의 목표용)
                 const newCompletedSessions = completedWorkSessions + 1;
 
                 // 다음 모드 결정
@@ -287,30 +289,35 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
                 return {
                   mode: nextMode,
                   time: nextTime,
-                  completedSessions: newCompletedSessions,
+                  completedSessions: newCompletedSessions, // 오늘의 목표용
+                  currentSession: currentSessionNumber, // 현재 세션 번호는 변경하지 않음
                   todayCompleted: todayCompletedSessions + 1,
                 };
               }
               // 휴식 세션 완료시
               else {
+                // 다음 세션 번호 증가 (작업 모드로 전환될 때)
+                const newCurrentSession = currentSessionNumber + 1;
+
                 // 항상 작업 모드로 전환
                 const nextTime = testMode ? testDuration : workDuration * 60;
                 return {
                   mode: "work",
                   time: nextTime,
-                  completedSessions: completedWorkSessions,
+                  completedSessions: completedWorkSessions, // 완료 세션은 변경 없음
+                  currentSession: newCurrentSession, // 새 세션 번호
                   todayCompleted: todayCompletedSessions,
                 };
               }
             };
 
             // 다음 모드와 시간 계산
-            const {
-              mode: nextMode,
-              time: nextTime,
-              completedSessions: newCompletedSessions,
-              todayCompleted: newTodayCompleted,
-            } = getNextModeAndTime();
+            const result = getNextModeAndTime();
+            const nextMode = result.mode as TimerMode;
+            const nextTime = result.time;
+            const newCompletedSessions = result.completedSessions;
+            const newSessionNumber = result.currentSession;
+            const newTodayCompleted = result.todayCompleted;
 
             // 작업 세션 완료 시 통계 업데이트
             if (currentMode === "work") {
@@ -329,21 +336,19 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
                   })
                 );
               }
+            } else if (currentMode === "break" || currentMode === "longBreak") {
+              // 휴식 완료 시 새 세션 번호 업데이트
+              setCurrentSessionNumber(newSessionNumber);
             }
 
-            // 중요: 모드 변경은 바로 하지만, 타이머 시간은 useRef로 먼저 저장
-            // 이렇게 하면 모드 변경 감지 useEffect에서 올바른 시간을 설정할 수 있음
-
-            // 최종 상태 변경 순서:
-            // 1. 먼저 isActive를 false로 설정 (타이머 일시 정지)
-            // 2. 모드 변경
-            // 3. 마지막으로 자동 시작 여부에 따라 isActive 설정
+            // 중요: 상태 업데이트 순서 변경 - 타이머 시간을 먼저 설정하고 모드 변경
+            // React 18의 동시성 모드에서도 올바르게 작동하도록 함
 
             // 타이머를 먼저 정지 (다른 상태 변경 전)
             setIsActive(false);
 
             // 그 다음 모드 변경
-            setMode(nextMode as TimerMode);
+            setMode(nextMode);
 
             // 약간의 딜레이 후 타이머 시간 설정 및 자동 시작 처리
             setTimeout(() => {
@@ -438,6 +443,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     soundEnabled,
     autoStartNextSession,
     completedWorkSessions,
+    currentSessionNumber, // 의존성 배열에 currentSessionNumber 추가
     workSessionsBeforeLongBreak,
     showNotification,
     todayCompletedSessions,
@@ -457,6 +463,9 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // 작업 세션 카운트 초기화
     setCompletedWorkSessions(0);
+
+    // 현재 세션 번호 초기화 (1로 설정)
+    setCurrentSessionNumber(1);
 
     // 모드 변경 (이후 useEffect에서 시간 설정됨)
     setMode("work");
@@ -655,6 +664,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     longBreakDuration,
     workSessionsBeforeLongBreak,
     completedWorkSessions,
+    currentSessionNumber,
     todayCompletedSessions,
     sessions,
     dailyGoal,

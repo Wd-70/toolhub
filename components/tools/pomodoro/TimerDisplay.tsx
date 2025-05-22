@@ -15,7 +15,7 @@ export function TimerDisplay({ className }: TimerDisplayProps) {
     formatTime,
     calculateProgress,
     testMode,
-    completedWorkSessions,
+    currentSessionNumber,
     workSessionsBeforeLongBreak,
   } = usePomodoroContext();
 
@@ -47,6 +47,11 @@ export function TimerDisplay({ className }: TimerDisplayProps) {
 
   const currentColor = modeColors[mode];
 
+  // 현재 세션 번호를 워크세션 길이로 나눈 나머지를 계산 (0이면 워크세션 길이 사용)
+  const displaySessionNumber =
+    currentSessionNumber % workSessionsBeforeLongBreak ||
+    workSessionsBeforeLongBreak;
+
   return (
     <div
       className={`flex flex-col items-center justify-center space-y-6 ${className}`}
@@ -61,7 +66,7 @@ export function TimerDisplay({ className }: TimerDisplayProps) {
               : "Long Break"}
           </h3>
           <Badge variant="outline" className={currentColor.badge}>
-            {completedWorkSessions} / {workSessionsBeforeLongBreak}
+            {displaySessionNumber} / {workSessionsBeforeLongBreak}
           </Badge>
           {testMode && (
             <Badge
