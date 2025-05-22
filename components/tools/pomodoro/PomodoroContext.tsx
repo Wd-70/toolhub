@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
+import { usePageVisibility } from "./hooks/usePageVisibility";
 
 export type TimerMode = "work" | "break" | "longBreak";
 
@@ -42,6 +43,10 @@ type PomodoroContextType = {
   testMode: boolean;
   testDuration: number;
   showTestControls: boolean;
+
+  // 전역 모드 설정
+  globalModeEnabled: boolean;
+  setGlobalModeEnabled: (enabled: boolean) => void;
 
   // 타이머 제어 함수
   toggleTimer: () => void;
@@ -121,6 +126,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     "default" | "denied" | "granted"
   >("default");
   const [volume, setVolume] = useState<number>(0.5); // 기본 볼륨 50%
+  const [globalModeEnabled, setGlobalModeEnabled] = useState<boolean>(true); // 기본적으로 전역 모드 활성화
 
   // 테스트 모드 관련 상태
   const [testMode, setTestMode] = useState<boolean>(false);
@@ -131,6 +137,9 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const notificationRef = useRef<Notification | null>(null);
+
+  // 페이지 가시성 감지
+  const { isVisible } = usePageVisibility();
 
   // 타이머 초기화 및 정리
   useEffect(() => {
@@ -231,9 +240,24 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     longBreakDuration,
   ]);
 
+  // 페이지 가시성 변경 시 타이머 일시 정지/재개
+  useEffect(() => {
+    // 전역 모드가 비활성화되어 있고, 타이머가 활성화된 상태에서 페이지를 벗어나면 일시 정지
+    if (!globalModeEnabled && isActive && !isVisible) {
+      console.debug("페이지를 벗어나 타이머 일시 정지");
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    // 전역 모드가 비활성화되어 있고, 타이머가 일시 정지된 상태에서 페이지로 돌아오면 자동 재개하지 않음
+    // 사용자가 직접 재개 버튼을 누르도록 함
+  }, [isVisible, isActive, globalModeEnabled]);
+
   // 타이머 작동 로직
   useEffect(() => {
-    if (isActive) {
+    // 타이머가 활성화되었고 (전역 모드가 켜져 있거나 페이지가 보이는 상태)인 경우에만 작동
+    if (isActive && (globalModeEnabled || isVisible)) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -443,13 +467,15 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     soundEnabled,
     autoStartNextSession,
     completedWorkSessions,
-    currentSessionNumber, // 의존성 배열에 currentSessionNumber 추가
+    currentSessionNumber,
     workSessionsBeforeLongBreak,
     showNotification,
     todayCompletedSessions,
     testMode,
     testDuration,
     volume,
+    globalModeEnabled, // 전역 모드 상태 추가
+    isVisible, // 페이지 가시성 상태 추가
   ]);
 
   // 타이머 제어 함수
@@ -680,6 +706,10 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     testMode,
     testDuration,
     showTestControls,
+
+    // 전역 모드 설정
+    globalModeEnabled,
+    setGlobalModeEnabled,
 
     // 타이머 제어 함수
     toggleTimer,

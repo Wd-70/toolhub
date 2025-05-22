@@ -47,6 +47,8 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
     setBreakDuration,
     setLongBreakDuration,
     setWorkSessionsBeforeLongBreak,
+    globalModeEnabled,
+    setGlobalModeEnabled,
   } = usePomodoroContext();
 
   // 기본값 복원 핸들러
@@ -143,6 +145,19 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
           id="auto-start"
           checked={autoStartNextSession}
           onCheckedChange={setAutoStartNextSession}
+        />
+      </div>
+      <div className="flex items-center justify-between pt-2">
+        <Label htmlFor="global-mode" className="cursor-pointer">
+          전역 모드 사용
+          <p className="text-xs text-gray-500">
+            다른 페이지에서도 타이머가 계속 작동합니다
+          </p>
+        </Label>
+        <Switch
+          id="global-mode"
+          checked={globalModeEnabled}
+          onCheckedChange={setGlobalModeEnabled}
         />
       </div>
       <div className="flex items-center justify-between pt-2">
