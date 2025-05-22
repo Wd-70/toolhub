@@ -51,6 +51,7 @@ type PomodoroContextType = {
 
   // 설정 변경 함수
   setMode: (mode: TimerMode) => void;
+  setTimeLeft: (timeLeft: number) => void;
   setWorkDuration: (duration: number) => void;
   setBreakDuration: (duration: number) => void;
   setLongBreakDuration: (duration: number) => void;
@@ -195,31 +196,37 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, []);
 
-  // 테스트 모드가 변경될 때 타이머 시간 업데이트
+  // 테스트 모드 또는 모드가 변경될 때 타이머 시간 업데이트
+  // 주의: 이 useEffect는 타이머가 실행 중이 아닐 때만 작동함
   useEffect(() => {
+    // 타이머가 실행 중이 아닐 때만 시간 재설정
     if (!isActive) {
-      if (testMode) {
-        // 테스트 모드일 때는 설정된 테스트 시간으로 변경
-        setTimeLeft(testDuration);
-      } else {
-        // 일반 모드일 때는 현재 모드에 맞는 시간으로 설정
-        setTimeLeft(
-          mode === "work"
-            ? workDuration * 60
-            : mode === "break"
-            ? breakDuration * 60
-            : longBreakDuration * 60
-        );
-      }
+      console.debug(
+        `모드/테스트 변경 감지: ${mode}, 테스트모드=${
+          testMode ? "활성" : "비활성"
+        }`
+      );
+
+      // 현재 모드에 맞는 시간 계산
+      const newTime = testMode
+        ? testDuration
+        : mode === "work"
+        ? workDuration * 60
+        : mode === "break"
+        ? breakDuration * 60
+        : longBreakDuration * 60;
+
+      console.debug(`타이머 시간 재설정: ${newTime}초`);
+      setTimeLeft(newTime);
     }
   }, [
+    // 의존성 배열에서 중요한 것만 포함 (isActive는 제외)
     testMode,
     testDuration,
     mode,
     workDuration,
     breakDuration,
     longBreakDuration,
-    isActive,
   ]);
 
   // 타이머 작동 로직
@@ -249,14 +256,66 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
               },
             ]);
 
-            // 작업 세션 완료 시 카운트 증가
-            if (mode === "work") {
-              // 먼저 완료된 세션 수를 증가시킨 후
-              const newCompletedSessions = completedWorkSessions + 1;
-              setCompletedWorkSessions(newCompletedSessions);
+            // 현재 모드 저장 (이후 로직에서 사용)
+            const currentMode = mode;
 
-              // 오늘 완료한 세션 수 업데이트
-              const newTodayCompleted = todayCompletedSessions + 1;
+            // 다음 모드와 시간을 결정하는 함수
+            const getNextModeAndTime = () => {
+              // 작업 세션 완료시
+              if (currentMode === "work") {
+                // 완료된 세션 수 증가
+                const newCompletedSessions = completedWorkSessions + 1;
+
+                // 다음 모드 결정
+                let nextMode: TimerMode;
+                if (
+                  newCompletedSessions > 0 &&
+                  newCompletedSessions % workSessionsBeforeLongBreak === 0
+                ) {
+                  nextMode = "longBreak";
+                } else {
+                  nextMode = "break";
+                }
+
+                // 다음 모드에 맞는 시간 계산
+                const nextTime = testMode
+                  ? testDuration
+                  : nextMode === "break"
+                  ? breakDuration * 60
+                  : longBreakDuration * 60;
+
+                return {
+                  mode: nextMode,
+                  time: nextTime,
+                  completedSessions: newCompletedSessions,
+                  todayCompleted: todayCompletedSessions + 1,
+                };
+              }
+              // 휴식 세션 완료시
+              else {
+                // 항상 작업 모드로 전환
+                const nextTime = testMode ? testDuration : workDuration * 60;
+                return {
+                  mode: "work",
+                  time: nextTime,
+                  completedSessions: completedWorkSessions,
+                  todayCompleted: todayCompletedSessions,
+                };
+              }
+            };
+
+            // 다음 모드와 시간 계산
+            const {
+              mode: nextMode,
+              time: nextTime,
+              completedSessions: newCompletedSessions,
+              todayCompleted: newTodayCompleted,
+            } = getNextModeAndTime();
+
+            // 작업 세션 완료 시 통계 업데이트
+            if (currentMode === "work") {
+              // 완료된 세션 수 업데이트
+              setCompletedWorkSessions(newCompletedSessions);
               setTodayCompletedSessions(newTodayCompleted);
 
               // 로컬 스토리지에 저장
@@ -270,21 +329,32 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
                   })
                 );
               }
-
-              // 모드 전환 - 증가된 세션 수를 기준으로 판단
-              // 첫 번째 세션 후에는 newCompletedSessions가 1이므로 긴 휴식으로 가지 않음
-              if (
-                newCompletedSessions > 0 &&
-                newCompletedSessions % workSessionsBeforeLongBreak === 0
-              ) {
-                setMode("longBreak");
-              } else {
-                setMode("break");
-              }
-            } else {
-              // 휴식 후에는 항상 작업 세션
-              setMode("work");
             }
+
+            // 중요: 모드 변경은 바로 하지만, 타이머 시간은 useRef로 먼저 저장
+            // 이렇게 하면 모드 변경 감지 useEffect에서 올바른 시간을 설정할 수 있음
+
+            // 최종 상태 변경 순서:
+            // 1. 먼저 isActive를 false로 설정 (타이머 일시 정지)
+            // 2. 모드 변경
+            // 3. 마지막으로 자동 시작 여부에 따라 isActive 설정
+
+            // 타이머를 먼저 정지 (다른 상태 변경 전)
+            setIsActive(false);
+
+            // 그 다음 모드 변경
+            setMode(nextMode as TimerMode);
+
+            // 약간의 딜레이 후 타이머 시간 설정 및 자동 시작 처리
+            setTimeout(() => {
+              // 타이머 시간 설정
+              setTimeLeft(nextTime);
+
+              // 자동 시작 설정에 따라 타이머 시작
+              if (autoStartNextSession) {
+                setIsActive(true);
+              }
+            }, 100);
 
             // 알림음 재생
             if (soundEnabled && audioRef.current) {
@@ -342,19 +412,8 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
               }
             }
 
-            // 새 모드에 맞는 시간 설정
-            const newTime = testMode
-              ? testDuration
-              : mode === "work"
-              ? workDuration * 60
-              : mode === "break"
-              ? breakDuration * 60
-              : longBreakDuration * 60;
-
-            setTimeLeft(newTime);
-
-            // 자동 시작 설정에 따라 다음 세션 시작 여부 결정
-            setIsActive(autoStartNextSession);
+            // 알림 처리 완료
+            // 자동 시작은 이미 위에서 처리했으므로 여기서는 생략
 
             return 0;
           }
@@ -393,10 +452,21 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const resetTimer = () => {
+    // 먼저 타이머 중지
     setIsActive(false);
-    setMode("work");
-    setTimeLeft(testMode ? testDuration : workDuration * 60);
+
+    // 작업 세션 카운트 초기화
     setCompletedWorkSessions(0);
+
+    // 모드 변경 (이후 useEffect에서 시간 설정됨)
+    setMode("work");
+
+    // 시간은 별도로 설정 (useEffect가 감지하지 못하는 경우를 대비)
+    setTimeout(() => {
+      const time = testMode ? testDuration : workDuration * 60;
+      console.debug(`타이머 리셋: ${time}초`);
+      setTimeLeft(time);
+    }, 50);
   };
 
   const formatTime = (seconds: number): string => {
@@ -610,6 +680,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // 설정 변경 함수
     setMode,
+    setTimeLeft,
     setWorkDuration,
     setBreakDuration,
     setLongBreakDuration,
