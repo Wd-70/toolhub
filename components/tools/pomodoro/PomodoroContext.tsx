@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext } from "react";
-import { useTimer } from "./hooks/useTimer";
+import { useSession } from "./hooks/useSession";
 import { useNotification } from "./hooks/useNotification";
 import { useSettings } from "./hooks/useSettings";
 import { useStats } from "./hooks/useStats";
@@ -33,8 +33,19 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
   // 알림 관련 훅
   const notifications = useNotification();
 
-  // 타이머 관련 훅
-  const timer = useTimer({
+  // 테스트 모드 상태
+  const [testMode, setTestMode] = React.useState(false);
+  const [testDuration, setTestDuration] = React.useState(10); // 테스트 모드에서의 기본 시간(초)
+
+  // 세션 및 타이머 관련 훅
+  const session = useSession({
+    workDuration: settings.workDuration,
+    breakDuration: settings.breakDuration,
+    longBreakDuration: settings.longBreakDuration,
+    workSessionsBeforeLongBreak: settings.workSessionsBeforeLongBreak,
+    autoStartNextSession: settings.autoStartNextSession,
+    globalModeEnabled: settings.globalModeEnabled,
+    isTestMode: testMode,
     onSessionComplete: (mode, duration) => {
       // 세션 완료 시 알림 발송
       const title = mode === "work" ? "작업 시간 완료!" : "휴식 시간 완료!";
@@ -59,6 +70,11 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
+  // 테스트 모드 토글 함수
+  const toggleTestMode = React.useCallback(() => {
+    setTestMode((prev) => !prev);
+  }, []);
+
   // 이벤트 핸들러
   const handleDailyGoalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value);
@@ -67,31 +83,39 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // 테스트 시간 변경 핸들러
+  const handleTestDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number.parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setTestDuration(value);
+    }
+  };
+
   const contextValue: PomodoroContextType = {
-    // 타이머 상태
-    mode: timer.mode,
-    timeLeft: timer.timeLeft,
-    isActive: timer.isActive,
+    // 타이머 및 세션 상태
+    mode: session.mode,
+    timeLeft: session.timeLeft,
+    isActive: session.isActive,
     workDuration: settings.workDuration,
     breakDuration: settings.breakDuration,
     longBreakDuration: settings.longBreakDuration,
     workSessionsBeforeLongBreak: settings.workSessionsBeforeLongBreak,
-    completedWorkSessions: timer.completedWorkSessions,
-    currentSessionNumber: timer.currentSessionNumber,
+    completedWorkSessions: session.completedWorkSessions,
+    currentSessionNumber: session.currentSessionNumber,
     todayCompletedSessions: stats.todayCompletedSessions,
-    sessions: timer.sessions,
+    sessions: session.sessions,
     dailyGoal: stats.dailyGoal,
 
     // 설정
     soundEnabled: notifications.soundEnabled,
     volume: notifications.volume,
-    autoStartNextSession: timer.autoStartNextSession,
+    autoStartNextSession: settings.autoStartNextSession,
     showNotification: notifications.showNotification,
     notificationPermission: notifications.notificationPermission,
 
     // 테스트 모드
-    testMode: timer.testMode,
-    testDuration: timer.testDuration,
+    testMode,
+    testDuration,
     showTestControls: settings.showTestControls,
 
     // 전역 모드 설정
@@ -99,15 +123,15 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     setGlobalModeEnabled: settings.setGlobalModeEnabled,
 
     // 타이머 제어 함수
-    toggleTimer: timer.toggleTimer,
-    resetTimer: timer.resetTimer,
-    formatTime: timer.formatTime,
-    calculateProgress: timer.calculateProgress,
-    fastForwardTimer: timer.fastForwardTimer,
+    toggleTimer: session.toggleTimer,
+    resetTimer: session.resetSession, // 세션까지 모두 리셋
+    formatTime: session.formatTime,
+    calculateProgress: session.calculateProgress,
+    fastForwardTimer: session.fastForwardTimer,
 
     // 설정 변경 함수
-    setMode: timer.setMode,
-    setTimeLeft: timer.setTimeLeft,
+    setMode: session.setMode,
+    setTimeLeft: session.setTimeLeft,
     setWorkDuration: settings.setWorkDuration,
     setBreakDuration: settings.setBreakDuration,
     setLongBreakDuration: settings.setLongBreakDuration,
@@ -115,25 +139,44 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     setDailyGoal: stats.setDailyGoal,
     setSoundEnabled: notifications.setSoundEnabled,
     setVolume: notifications.setVolume,
-    setAutoStartNextSession: timer.setAutoStartNextSession,
+    setAutoStartNextSession: settings.setAutoStartNextSession,
     setShowNotification: notifications.setShowNotification,
 
     // 테스트 모드 함수
-    toggleTestMode: timer.toggleTestMode,
+    toggleTestMode,
     setShowTestControls: settings.setShowTestControls,
-    setTestDuration: timer.setTestDuration,
+    setTestDuration,
 
     // 알림 관련 함수
     requestNotificationPermission: notifications.requestNotificationPermission,
     openBrowserSettings: notifications.openBrowserSettings,
 
     // 이벤트 핸들러
-    handleWorkDurationChange: timer.handleWorkDurationChange,
-    handleBreakDurationChange: timer.handleBreakDurationChange,
-    handleLongBreakDurationChange: timer.handleLongBreakDurationChange,
-    handleTestDurationChange: timer.handleTestDurationChange,
-    handleWorkSessionsBeforeLongBreakChange:
-      timer.handleWorkSessionsBeforeLongBreakChange,
+    handleWorkDurationChange: (e) => {
+      const value = Number.parseInt(e.target.value);
+      if (!isNaN(value) && value > 0) {
+        settings.setWorkDuration(value);
+      }
+    },
+    handleBreakDurationChange: (e) => {
+      const value = Number.parseInt(e.target.value);
+      if (!isNaN(value) && value > 0) {
+        settings.setBreakDuration(value);
+      }
+    },
+    handleLongBreakDurationChange: (e) => {
+      const value = Number.parseInt(e.target.value);
+      if (!isNaN(value) && value > 0) {
+        settings.setLongBreakDuration(value);
+      }
+    },
+    handleTestDurationChange,
+    handleWorkSessionsBeforeLongBreakChange: (value) => {
+      const numValue = Number.parseInt(value);
+      if (!isNaN(numValue) && numValue > 0) {
+        settings.setWorkSessionsBeforeLongBreak(numValue);
+      }
+    },
     handleDailyGoalChange,
   };
 

@@ -13,6 +13,7 @@ interface TimerSettings {
   showNotification: boolean;
   globalModeEnabled: boolean;
   showTestControls: boolean;
+  autoStartNextSession: boolean;
 }
 
 const DEFAULT_SETTINGS: TimerSettings = {
@@ -26,6 +27,7 @@ const DEFAULT_SETTINGS: TimerSettings = {
   showNotification: true,
   globalModeEnabled: true,
   showTestControls: false,
+  autoStartNextSession: true,
 };
 
 export function useSettings() {
