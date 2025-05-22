@@ -29,38 +29,32 @@ export function useTimer(options: UseTimerOptions = {}) {
   // 전역 모드 설정
   const [globalModeEnabled, setGlobalModeEnabled] = useState<boolean>(true); // 기본적으로 전역 모드 활성화
 
+  // 세션 자동 시작 설정
+  const [autoStartNextSession, setAutoStartNextSession] =
+    useState<boolean>(true);
+
   // 타이머 참조
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 시간 저장 참조 (일시정지 시 사용)
   const savedTimeRef = useRef<number | null>(null);
 
-  // 페이지 가시성 감지
-  const { isPomodoro, wasHidden } = usePageVisibility();
+  // 페이지 가시성 감지 - 단순화된 버전
+  const { isPomodoro } = usePageVisibility();
   const isPomodoroRef = useRef(isPomodoro);
-  const wasHiddenRef = useRef(wasHidden);
 
   // 현재 페이지가 포모도로 페이지인지 업데이트
   useEffect(() => {
+    // 이전 상태 업데이트
+    const previousIsPomodoro = isPomodoroRef.current;
     isPomodoroRef.current = isPomodoro;
 
-    // 전역 모드가 아니고 포모도로 페이지가 아니고 타이머가 활성화된 경우 -> 타이머 멈춤
-    if (!globalModeEnabled && !isPomodoro && isActive) {
+    // 전역 모드가 아니고, 포모도로 페이지에서 벗어났고, 타이머가 활성화된 경우 -> 타이머 멈춤
+    if (!globalModeEnabled && previousIsPomodoro && !isPomodoro && isActive) {
       console.log("페이지 전환으로 타이머 정지");
       pauseTimer();
     }
   }, [isPomodoro, globalModeEnabled, isActive]);
-
-  // wasHidden 상태가 변경되었을 때 처리 (다른 툴로 전환했을 때)
-  useEffect(() => {
-    // wasHidden이 true로 변경되었고, 이전에는 false였으며, 전역 모드가 아니고 타이머가 활성화된 경우
-    if (wasHidden && !wasHiddenRef.current && !globalModeEnabled && isActive) {
-      console.log("다른 툴 선택으로 타이머 정지");
-      pauseTimer();
-    }
-
-    wasHiddenRef.current = wasHidden;
-  }, [wasHidden, globalModeEnabled, isActive]);
 
   // 테스트 모드 또는 모드가 변경될 때 타이머 시간 업데이트
   useEffect(() => {
@@ -162,6 +156,94 @@ export function useTimer(options: UseTimerOptions = {}) {
     setTimeLeft(time);
   }, [testMode, testDuration, workDuration, stopTimer]);
 
+  // 다음 세션으로 전환하는 함수
+  const moveToNextSession = useCallback(() => {
+    // 세션 기록
+    const sessionDuration = testMode
+      ? testDuration
+      : mode === "work"
+      ? workDuration * 60
+      : mode === "break"
+      ? breakDuration * 60
+      : longBreakDuration * 60;
+
+    // 새 세션 추가
+    const newSession = {
+      type: mode,
+      duration: sessionDuration,
+      timestamp: new Date(),
+    };
+
+    setSessions((prev) => [...prev, newSession]);
+
+    // 콜백 호출
+    if (options.onSessionComplete) {
+      options.onSessionComplete(mode, sessionDuration);
+    }
+
+    // 다음 모드와 시간 계산
+    let nextMode: TimerMode;
+    let nextTime: number;
+    let newCompletedSessions = completedWorkSessions;
+    let newSessionNumber = currentSessionNumber;
+
+    // 작업 세션 완료시
+    if (mode === "work") {
+      // 완료된 세션 수 증가
+      newCompletedSessions = completedWorkSessions + 1;
+
+      // 다음 모드 결정
+      if (
+        newCompletedSessions > 0 &&
+        newCompletedSessions % workSessionsBeforeLongBreak === 0
+      ) {
+        nextMode = "longBreak";
+        nextTime = testMode ? testDuration : longBreakDuration * 60;
+      } else {
+        nextMode = "break";
+        nextTime = testMode ? testDuration : breakDuration * 60;
+      }
+
+      // 완료된 세션 수 업데이트
+      setCompletedWorkSessions(newCompletedSessions);
+    }
+    // 휴식 세션 완료시
+    else {
+      // 다음 세션 번호 증가
+      newSessionNumber = currentSessionNumber + 1;
+      setCurrentSessionNumber(newSessionNumber);
+
+      // 작업 모드로 전환
+      nextMode = "work";
+      nextTime = testMode ? testDuration : workDuration * 60;
+    }
+
+    // 모드 변경
+    setMode(nextMode);
+
+    // 타이머 시간 설정
+    setTimeLeft(nextTime);
+
+    // 자동 시작 설정이 켜져 있으면 다음 세션 자동 시작
+    if (autoStartNextSession) {
+      setIsActive(true);
+    } else {
+      setIsActive(false);
+    }
+  }, [
+    mode,
+    testMode,
+    testDuration,
+    workDuration,
+    breakDuration,
+    longBreakDuration,
+    completedWorkSessions,
+    currentSessionNumber,
+    workSessionsBeforeLongBreak,
+    autoStartNextSession,
+    options.onSessionComplete,
+  ]);
+
   // 타이머 실행 효과
   useEffect(() => {
     if (isActive) {
@@ -188,74 +270,8 @@ export function useTimer(options: UseTimerOptions = {}) {
             console.log("타이머 종료");
             stopTimer();
 
-            // 세션 기록
-            const sessionDuration = testMode
-              ? testDuration
-              : mode === "work"
-              ? workDuration * 60
-              : mode === "break"
-              ? breakDuration * 60
-              : longBreakDuration * 60;
-
-            // 새 세션 추가
-            const newSession = {
-              type: mode,
-              duration: sessionDuration,
-              timestamp: new Date(),
-            };
-
-            setSessions((prev) => [...prev, newSession]);
-
-            // 콜백 호출
-            if (options.onSessionComplete) {
-              options.onSessionComplete(mode, sessionDuration);
-            }
-
-            // 다음 모드와 시간 계산
-            let nextMode: TimerMode;
-            let nextTime: number;
-            let newCompletedSessions = completedWorkSessions;
-            let newSessionNumber = currentSessionNumber;
-
-            // 작업 세션 완료시
-            if (mode === "work") {
-              // 완료된 세션 수 증가
-              newCompletedSessions = completedWorkSessions + 1;
-
-              // 다음 모드 결정
-              if (
-                newCompletedSessions > 0 &&
-                newCompletedSessions % workSessionsBeforeLongBreak === 0
-              ) {
-                nextMode = "longBreak";
-                nextTime = testMode ? testDuration : longBreakDuration * 60;
-              } else {
-                nextMode = "break";
-                nextTime = testMode ? testDuration : breakDuration * 60;
-              }
-
-              // 완료된 세션 수 업데이트
-              setCompletedWorkSessions(newCompletedSessions);
-            }
-            // 휴식 세션 완료시
-            else {
-              // 다음 세션 번호 증가
-              newSessionNumber = currentSessionNumber + 1;
-              setCurrentSessionNumber(newSessionNumber);
-
-              // 작업 모드로 전환
-              nextMode = "work";
-              nextTime = testMode ? testDuration : workDuration * 60;
-            }
-
-            // 타이머 일시 정지
-            setIsActive(false);
-
-            // 모드 변경
-            setMode(nextMode);
-
-            // 타이머 시간 설정
-            setTimeLeft(nextTime);
+            // 다음 세션으로 전환
+            moveToNextSession();
 
             return 0;
           }
@@ -270,21 +286,7 @@ export function useTimer(options: UseTimerOptions = {}) {
         }
       };
     }
-  }, [
-    isActive,
-    globalModeEnabled,
-    mode,
-    testMode,
-    testDuration,
-    workDuration,
-    breakDuration,
-    longBreakDuration,
-    completedWorkSessions,
-    currentSessionNumber,
-    workSessionsBeforeLongBreak,
-    options.onSessionComplete,
-    stopTimer,
-  ]);
+  }, [isActive, globalModeEnabled, stopTimer, moveToNextSession]);
 
   // 기타 유틸리티 함수
   const formatTime = useCallback((seconds: number): string => {
@@ -435,6 +437,7 @@ export function useTimer(options: UseTimerOptions = {}) {
     testMode,
     testDuration,
     globalModeEnabled,
+    autoStartNextSession,
 
     // 액션
     setMode,
@@ -449,6 +452,7 @@ export function useTimer(options: UseTimerOptions = {}) {
     setTestMode,
     setTestDuration,
     setGlobalModeEnabled,
+    setAutoStartNextSession,
     toggleTimer,
     resetTimer,
     formatTime,
