@@ -13,6 +13,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { usePomodoroContext } from "./PomodoroContext";
+import { ENABLE_TEST_MODE_UI } from "./config";
 
 interface TestModeControlsProps {
   className?: string;
@@ -29,7 +30,7 @@ export function TestModeControls({ className }: TestModeControlsProps) {
     fastForwardTimer,
   } = usePomodoroContext();
 
-  if (!showTestControls) return null;
+  if (!ENABLE_TEST_MODE_UI || !showTestControls) return null;
 
   return (
     <div

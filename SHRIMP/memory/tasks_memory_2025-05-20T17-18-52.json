@@ -1,0 +1,50 @@
+{
+  "tasks": [
+    {
+      "id": "242c7a8f-5025-4c2c-a802-54dc86e9a2f0",
+      "name": "포모도로 타이머 시간 업데이트 로직 수정",
+      "description": "포모도로 타이머에서 시간이 2초씩 감소하는 문제를 해결하기 위해 상태 업데이트 로직을 수정합니다. useToolState와 로컬 상태 간의 이중 업데이트 문제를 해결합니다.",
+      "notes": "updateTimeLeft 함수와 updatePomodoroState 함수의 관계를 파악하여 중복 호출을 제거해야 합니다.",
+      "status": "已完成",
+      "dependencies": [],
+      "createdAt": "2025-05-20T16:21:56.214Z",
+      "updatedAt": "2025-05-20T16:26:33.304Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro-timer.tsx",
+          "type": "TO_MODIFY",
+          "description": "포모도로 타이머 컴포넌트 파일",
+          "lineStart": 300,
+          "lineEnd": 400
+        }
+      ],
+      "implementationGuide": "1. components/tools/pomodoro-timer.tsx 파일에서 타이머 로직을 수정합니다.\n2. useEffect 내에서 setTimeLeft을 호출한 후 updateTimeLeft도 호출하는 중복 업데이트 패턴을 제거합니다.\n3. setInterval 내부에서 시간을 감소시킬 때 로컬 상태만 업데이트하고, Context 상태는 필요할 때만 업데이트하도록 수정합니다.\n4. setTimeout(updatePomodoroState, 0) 호출 패턴을 개선하여 동기화 문제를 해결합니다.",
+      "verificationCriteria": "1. 타이머가 정확히 1초씩 감소하는지 확인\n2. 타이머 시작, 일시정지, 재개 기능이 정상 동작하는지 검증\n3. 타이머 상태 업데이트가 Context에 올바르게 저장되는지 확인",
+      "summary": "포모도로 타이머의 시간 업데이트 로직을 성공적으로 개선했습니다. 기존의 시간이 2초씩 감소하는 문제를 해결하기 위해 다음과 같은 변경을 적용했습니다: 1) setTimeout을 제거하고 즉시 Context 업데이트, 2) setInterval 내에서의 이중 업데이트 제거, 3) 상태 업데이트를 최적화하기 위해 5초마다 한 번씩만 Context 상태 업데이트, 4) Context 상태가 변경될 때마다 로컬 상태를 동기화하는 useEffect 추가. 이러한 변경으로 타이머가 정확히 1초씩 감소하고 상태 관리가 개선되었습니다.",
+      "completedAt": "2025-05-20T16:26:33.303Z"
+    },
+    {
+      "id": "dd5a5ec6-05ec-4546-b38b-0bd73c0e099f",
+      "name": "포모도로 타이머 상태 초기화 로직 개선",
+      "description": "포모도로 타이머가 이전 상태로 잘못 초기화되는 문제를 해결합니다. 컴포넌트 마운트 시 Context에서 상태를 올바르게 가져오고 적용하는 로직을 개선합니다.",
+      "notes": "상태 초기화 시 isActive, mode 등 중요 상태 값이 올바르게 설정되는지 특히 주의해야 합니다.",
+      "status": "已完成",
+      "dependencies": [],
+      "createdAt": "2025-05-20T16:21:56.214Z",
+      "updatedAt": "2025-05-20T16:28:33.089Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro-timer.tsx",
+          "type": "TO_MODIFY",
+          "description": "포모도로 타이머 컴포넌트 파일",
+          "lineStart": 100,
+          "lineEnd": 250
+        }
+      ],
+      "implementationGuide": "1. components/tools/pomodoro-timer.tsx 파일에서 상태 초기화 로직을 수정합니다.\n2. useEffect를 사용하여 컴포넌트 마운트 시 Context에서 상태를 가져오고 로컬 상태를 정확하게 초기화합니다.\n3. toolState 변경 시 로컬 상태를 업데이트하는 useEffect를 추가합니다.\n4. 기본 상태 초기화 로직을 검토하고 필요한 경우 수정합니다.",
+      "verificationCriteria": "1. 컴포넌트 마운트 시 저장된 상태가 올바르게 로드되는지 확인\n2. 타이머 모드(work/break/longBreak)가 올바르게 초기화되는지 검증\n3. 페이지 새로고침 후에도 이전 상태가 올바르게 복원되는지 확인",
+      "summary": "포모도로 타이머의 상태 초기화 로직을 성공적으로 개선했습니다. 주요 변경 사항으로는: 1) useMemo를 사용하여 초기 상태를 계산하고 날짜가 변경되었을 때 일일 통계를 리셋하는 로직 추가, 2) 브라우저 새로고침 후 활성화된 타이머를 일시정지 상태로 올바르게 복원, 3) 첫 렌더링 여부를 체크하여 중복 초기화 방지, 4) Context 상태가 변경될 때 로컬 상태를 효율적으로 동기화하는 로직 개선. 이러한 변경으로 타이머가 이전 상태를 올바르게 복원하고 일관된 동작을 유지하도록 했습니다.",
+      "completedAt": "2025-05-20T16:28:33.088Z"
+    }
+  ]
+}

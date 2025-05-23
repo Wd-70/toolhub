@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import {
+  ENABLE_TEST_MODE_UI,
+  DEFAULT_SETTINGS as CONFIG_DEFAULT_SETTINGS,
+} from "../config";
 
 interface TimerSettings {
   workDuration: number;
@@ -17,10 +21,11 @@ interface TimerSettings {
 }
 
 const DEFAULT_SETTINGS: TimerSettings = {
-  workDuration: 25,
-  breakDuration: 5,
-  longBreakDuration: 15,
-  workSessionsBeforeLongBreak: 4,
+  workDuration: CONFIG_DEFAULT_SETTINGS.workDuration,
+  breakDuration: CONFIG_DEFAULT_SETTINGS.breakDuration,
+  longBreakDuration: CONFIG_DEFAULT_SETTINGS.longBreakDuration,
+  workSessionsBeforeLongBreak:
+    CONFIG_DEFAULT_SETTINGS.workSessionsBeforeLongBreak,
   dailyGoal: 8,
   soundEnabled: true,
   volume: 0.5,
@@ -42,6 +47,12 @@ export function useSettings() {
         if (savedSettings) {
           try {
             const parsedSettings = JSON.parse(savedSettings);
+
+            // 개발 모드가 아닐 때는 테스트 모드 설정이 적용되지 않도록 함
+            if (!ENABLE_TEST_MODE_UI) {
+              parsedSettings.showTestControls = false;
+            }
+
             setSettings((prevSettings) => ({
               ...prevSettings,
               ...parsedSettings,
@@ -61,6 +72,11 @@ export function useSettings() {
   // 설정 저장
   const saveSettings = useCallback((newSettings: Partial<TimerSettings>) => {
     setSettings((prevSettings) => {
+      // 개발 모드가 아닐 때는 테스트 모드 설정이 저장되지 않도록 함
+      if (!ENABLE_TEST_MODE_UI && "showTestControls" in newSettings) {
+        newSettings.showTestControls = false;
+      }
+
       const updatedSettings = { ...prevSettings, ...newSettings };
 
       if (typeof window !== "undefined") {
@@ -140,7 +156,17 @@ export function useSettings() {
 
   const setShowTestControls = useCallback(
     (show: boolean) => {
-      saveSettings({ showTestControls: show });
+      // 개발 모드에서만 테스트 모드 설정 활성화
+      if (ENABLE_TEST_MODE_UI) {
+        saveSettings({ showTestControls: show });
+      }
+    },
+    [saveSettings]
+  );
+
+  const setAutoStartNextSession = useCallback(
+    (auto: boolean) => {
+      saveSettings({ autoStartNextSession: auto });
     },
     [saveSettings]
   );
@@ -160,6 +186,12 @@ export function useSettings() {
     (jsonSettings: string) => {
       try {
         const parsedSettings = JSON.parse(jsonSettings);
+
+        // 개발 모드가 아닐 때는 테스트 모드 설정이 적용되지 않도록 함
+        if (!ENABLE_TEST_MODE_UI && parsedSettings.showTestControls) {
+          parsedSettings.showTestControls = false;
+        }
+
         saveSettings(parsedSettings);
         return true;
       } catch (e) {
@@ -185,6 +217,7 @@ export function useSettings() {
     setShowNotification,
     setGlobalModeEnabled,
     setShowTestControls,
+    setAutoStartNextSession,
 
     // 설정 관리 함수
     saveSettings,

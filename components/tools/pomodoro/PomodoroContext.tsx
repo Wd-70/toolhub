@@ -6,6 +6,7 @@ import { useNotification } from "./hooks/useNotification";
 import { useSettings } from "./hooks/useSettings";
 import { useStats } from "./hooks/useStats";
 import { PomodoroContextType } from "./types";
+import { ENABLE_TEST_MODE_UI, TEST_MODE_SETTINGS } from "./config";
 
 export { type TimerMode, type SessionData } from "./types";
 
@@ -33,9 +34,11 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
   // 알림 관련 훅
   const notifications = useNotification();
 
-  // 테스트 모드 상태
+  // 테스트 모드 상태 - 개발 모드에서만 초기화
   const [testMode, setTestMode] = React.useState(false);
-  const [testDuration, setTestDuration] = React.useState(10); // 테스트 모드에서의 기본 시간(초)
+  const [testDuration, setTestDuration] = React.useState(
+    TEST_MODE_SETTINGS.defaultTestDuration
+  );
 
   // 세션 및 타이머 관련 훅
   const session = useSession({
@@ -45,7 +48,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     workSessionsBeforeLongBreak: settings.workSessionsBeforeLongBreak,
     autoStartNextSession: settings.autoStartNextSession,
     globalModeEnabled: settings.globalModeEnabled,
-    isTestMode: testMode,
+    isTestMode: testMode && ENABLE_TEST_MODE_UI, // 개발 모드가 아니면 테스트 모드도 비활성화
     onSessionComplete: (mode, duration) => {
       // 세션 완료 시 알림 발송
       const title = mode === "work" ? "작업 시간 완료!" : "휴식 시간 완료!";
@@ -72,7 +75,10 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // 테스트 모드 토글 함수
   const toggleTestMode = React.useCallback(() => {
-    setTestMode((prev) => !prev);
+    // 개발 모드에서만 토글 가능
+    if (ENABLE_TEST_MODE_UI) {
+      setTestMode((prev) => !prev);
+    }
   }, []);
 
   // 이벤트 핸들러
@@ -116,7 +122,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     // 테스트 모드
     testMode,
     testDuration,
-    showTestControls: settings.showTestControls,
+    showTestControls: settings.showTestControls && ENABLE_TEST_MODE_UI,
 
     // 전역 모드 설정
     globalModeEnabled: settings.globalModeEnabled,

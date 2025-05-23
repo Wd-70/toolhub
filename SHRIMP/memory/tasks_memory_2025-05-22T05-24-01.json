@@ -1,0 +1,120 @@
+{
+  "tasks": [
+    {
+      "id": "89aac8d5-0f74-461f-b305-fddc5b44fc49",
+      "name": "PomodoroProvider 전역화 구현",
+      "description": "포모도로 타이머의 상태를 전역적으로 관리하기 위해 PomodoroProvider를 앱 최상위 레벨(app/layout.tsx)로 이동시킵니다. 이를 통해 페이지 이동 시에도 타이머 상태가 유지됩니다.",
+      "notes": "PomodoroContext.tsx에는 이미 브라우저 localStorage를 통한 상태 저장 기능이 구현되어 있는지 확인하고, 필요시 개선해야 합니다. Context의 중첩 순서가 중요하므로 Provider 배치 순서에 주의해야 합니다.",
+      "status": "已完成",
+      "dependencies": [],
+      "createdAt": "2025-05-21T15:58:21.001Z",
+      "updatedAt": "2025-05-21T16:44:07.395Z",
+      "relatedFiles": [
+        {
+          "path": "app/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "PomodoroProvider를 추가하기 위한 수정 필요",
+          "lineStart": 1,
+          "lineEnd": 35
+        },
+        {
+          "path": "components/tools/pomodoro/PomodoroContext.tsx",
+          "type": "REFERENCE",
+          "description": "포모도로 타이머의 Context 정의 파일",
+          "lineStart": 1,
+          "lineEnd": 649
+        },
+        {
+          "path": "components/tools/pomodoro/PomodoroTimer.tsx",
+          "type": "TO_MODIFY",
+          "description": "Provider 제거 필요",
+          "lineStart": 1,
+          "lineEnd": 33
+        }
+      ],
+      "implementationGuide": "1. app/layout.tsx 파일을 수정하여 PomodoroProvider import 추가\n2. 기존 Provider 중첩 구조(ThemeProvider, ToolStateProvider) 안에 PomodoroProvider 추가\n3. PomodoroProvider를 가장 안쪽에 배치하여 다른 Provider의 기능을 사용할 수 있도록 함\n4. 기존 포모도로 타이머 컴포넌트(components/tools/pomodoro/PomodoroTimer.tsx)에서 PomodoroProvider 제거",
+      "verificationCriteria": "1. PomodoroProvider가 app/layout.tsx에 올바르게 추가되었는지 확인\n2. 기존 Provider 중첩 순서가 적절한지 확인\n3. components/tools/pomodoro/PomodoroTimer.tsx에서 PomodoroProvider가 제거되었는지 확인\n4. 다른 페이지로 이동해도 타이머 상태가 유지되는지 확인",
+      "analysisResult": "포모도로 타이머를 페이지 이동 시에도 계속 동작하게 하고 사이드바에서 상태를 확인할 수 있도록 개선하기 위해 다음과 같은 방향으로 구현합니다:\n\n1. PomodoroProvider를 앱 최상위 레벨(app/layout.tsx)로 이동시켜 전역 상태로 관리\n2. 미니 타이머 컴포넌트를 생성하여 사이드바에 통합\n3. 기존 PomodoroTimer 컴포넌트에서 Provider 제거 후 전역 Context 사용\n4. 타이머 상태에 따른 UI 개선 및 사용자 경험 최적화\n5. 성능 최적화 및 테스트",
+      "summary": "PomodoroProvider를 app/layout.tsx에 성공적으로 추가했으며, PomodoroTimer 컴포넌트에서 Provider를 제거했습니다. 이제 Provider가 전역적으로 사용되므로 페이지 이동 시에도 타이머 상태가 유지될 것입니다.",
+      "completedAt": "2025-05-21T16:44:07.395Z"
+    },
+    {
+      "id": "e3ae32f6-8d71-4e83-9b3d-4c5392b32baa",
+      "name": "미니 타이머 컴포넌트 생성",
+      "description": "사이드바에 표시할 간소화된 미니 타이머 컴포넌트를 개발합니다. 이 컴포넌트는 타이머 상태(모드, 남은 시간)를 표시하고 기본적인 제어(시작/정지) 기능을 제공합니다.",
+      "notes": "미니 타이머는 최소한의 공간을 차지하면서도 필요한 정보를 명확히 표시해야 합니다. UI 컴포넌트는 기존 프로젝트의 디자인 시스템(Tailwind CSS)을 활용해야 합니다.",
+      "status": "已完成",
+      "dependencies": [
+        {
+          "taskId": "89aac8d5-0f74-461f-b305-fddc5b44fc49"
+        }
+      ],
+      "createdAt": "2025-05-21T15:58:21.001Z",
+      "updatedAt": "2025-05-21T16:58:51.772Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro/MiniTimerContainer.tsx",
+          "type": "CREATE",
+          "description": "사이드바에 표시할 미니 타이머 컴포넌트"
+        },
+        {
+          "path": "components/tools/pomodoro/PomodoroContext.tsx",
+          "type": "REFERENCE",
+          "description": "포모도로 Context에서 필요한 상태와 함수 확인",
+          "lineStart": 1,
+          "lineEnd": 649
+        },
+        {
+          "path": "components/ui/button.tsx",
+          "type": "REFERENCE",
+          "description": "기존 UI 컴포넌트 참조"
+        }
+      ],
+      "implementationGuide": "1. components/tools/pomodoro/MiniTimerContainer.tsx 파일 생성\n2. usePomodoroContext 훅을 사용하여 타이머 상태 및 제어 함수 가져오기\n3. 컴팩트한 디자인의 미니 타이머 UI 구현\n4. 타이머 모드(작업/휴식)에 따른 색상 적용\n5. 시작/정지 버튼 구현",
+      "verificationCriteria": "1. 미니 타이머 컴포넌트가 생성되고 필요한 기능(타이머 표시, 모드 표시, 시작/정지)이 구현되었는지 확인\n2. 기존 디자인 시스템과 일관된 스타일이 적용되었는지 확인\n3. 컴포넌트가 usePomodoroContext를 올바르게 사용하는지 확인\n4. 컴포넌트가 독립적으로 렌더링되는지 확인",
+      "analysisResult": "포모도로 타이머를 페이지 이동 시에도 계속 동작하게 하고 사이드바에서 상태를 확인할 수 있도록 개선하기 위해 다음과 같은 방향으로 구현합니다:\n\n1. PomodoroProvider를 앱 최상위 레벨(app/layout.tsx)로 이동시켜 전역 상태로 관리\n2. 미니 타이머 컴포넌트를 생성하여 사이드바에 통합\n3. 기존 PomodoroTimer 컴포넌트에서 Provider 제거 후 전역 Context 사용\n4. 타이머 상태에 따른 UI 개선 및 사용자 경험 최적화\n5. 성능 최적화 및 테스트",
+      "summary": "미니 타이머 컴포넌트를 성공적으로 구현했습니다. usePomodoroContext를 사용하여 타이머 상태를 가져오고, 타이머 모드에 따른 색상을 적용했으며, 시작/정지 버튼을 추가했습니다. 진행 상태 표시 바와 포모도로 페이지로 이동하는 링크 기능도 추가하여 사용자 경험을 향상시켰습니다. 기존 디자인 시스템(Tailwind CSS)을 활용하여 일관된 스타일링을 적용했습니다.",
+      "completedAt": "2025-05-21T16:58:51.768Z"
+    },
+    {
+      "id": "356b178e-9367-451a-af61-974cef12d158",
+      "name": "사이드바 통합 - 데스크톱 버전",
+      "description": "생성한 미니 타이머 컴포넌트를 데스크톱용 사이드바(ToolSidebar.tsx)에 통합합니다. 타이머 상태에 따라 조건부 스타일링을 적용하고, 사이드바의 적절한 위치에 배치합니다.",
+      "notes": "사이드바에 미니 타이머를 추가할 때 기존 레이아웃을 해치지 않도록 주의해야 합니다. 타이머가 활성화되지 않았을 때도 미니 타이머를 표시하되 시각적으로 구분되게 하는 것이 좋습니다.",
+      "status": "已完成",
+      "dependencies": [
+        {
+          "taskId": "e3ae32f6-8d71-4e83-9b3d-4c5392b32baa"
+        }
+      ],
+      "createdAt": "2025-05-21T15:58:21.001Z",
+      "updatedAt": "2025-05-21T17:04:55.966Z",
+      "relatedFiles": [
+        {
+          "path": "components/layout/ToolSidebar.tsx",
+          "type": "TO_MODIFY",
+          "description": "미니 타이머 컴포넌트를 사이드바에 추가",
+          "lineStart": 1,
+          "lineEnd": 176
+        },
+        {
+          "path": "components/tools/pomodoro/MiniTimerContainer.tsx",
+          "type": "REFERENCE",
+          "description": "생성한 미니 타이머 컴포넌트 참조"
+        },
+        {
+          "path": "components/tools/pomodoro/PomodoroContext.tsx",
+          "type": "REFERENCE",
+          "description": "포모도로 Context 사용을 위한 참조",
+          "lineStart": 1,
+          "lineEnd": 649
+        }
+      ],
+      "implementationGuide": "1. components/layout/ToolSidebar.tsx 파일을 수정하여 MiniTimerContainer import 추가\n2. usePomodoroContext 훅을 사용하여 타이머 상태 확인\n3. SidebarFooter 영역에 미니 타이머 컴포넌트 추가\n4. 타이머 상태(isActive 등)에 따른 조건부 렌더링 또는 스타일링 적용\n5. 미니 타이머 클릭 시 포모도로 페이지로 이동하는 기능 추가",
+      "verificationCriteria": "1. 미니 타이머가 사이드바 푸터 영역에 올바르게 표시되는지 확인\n2. 타이머 상태에 따른 조건부 스타일링이 적용되는지 확인\n3. 미니 타이머 클릭 시 포모도로 페이지로 이동하는지 확인\n4. 사이드바의 기존 레이아웃이 망가지지 않는지 확인",
+      "analysisResult": "포모도로 타이머를 페이지 이동 시에도 계속 동작하게 하고 사이드바에서 상태를 확인할 수 있도록 개선하기 위해 다음과 같은 방향으로 구현합니다:\n\n1. PomodoroProvider를 앱 최상위 레벨(app/layout.tsx)로 이동시켜 전역 상태로 관리\n2. 미니 타이머 컴포넌트를 생성하여 사이드바에 통합\n3. 기존 PomodoroTimer 컴포넌트에서 Provider 제거 후 전역 Context 사용\n4. 타이머 상태에 따른 UI 개선 및 사용자 경험 최적화\n5. 성능 최적화 및 테스트",
+      "summary": "데스크톱 사이드바에 미니 타이머 컴포넌트를 성공적으로 통합했습니다. ToolSidebar.tsx 파일에 MiniTimerContainer와 usePomodoroContext를 import하고, SidebarFooter 영역에 미니 타이머를 추가했습니다. 현재 페이지가 포모도로 페이지가 아닌 경우에만 미니 타이머가 표시되도록 조건부 렌더링을 적용했으며, 구분선과 여백을 추가하여 시각적으로 잘 구분되도록 했습니다.",
+      "completedAt": "2025-05-21T17:04:55.965Z"
+    }
+  ]
+}

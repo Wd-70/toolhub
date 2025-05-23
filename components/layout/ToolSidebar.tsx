@@ -36,6 +36,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MiniTimerContainer } from "@/components/tools/pomodoro/MiniTimerContainer";
+import { usePomodoroContext } from "@/components/tools/pomodoro/PomodoroContext";
 
 // 도구 카테고리 정의
 const toolCategories = [
@@ -111,6 +113,7 @@ interface ToolSidebarProps {
 export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
   const pathname = usePathname();
   const detectedMobile = useIsMobile();
+  const { timeLeft, globalModeEnabled } = usePomodoroContext();
 
   // 주입된 isMobile prop이나 자동 감지된 값 사용
   const isOnMobile = isMobile || detectedMobile;
@@ -126,6 +129,9 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
 
   // 모바일에서는 사이드바 너비를 최대화
   const sidebarClass = isOnMobile ? "w-full" : "w-[250px]";
+
+  // 타이머가 활성화된 포모도로 페이지가 아니고, 전역 모드가 활성화된 경우에만 미니 타이머 표시
+  const showMiniTimer = currentToolId !== "pomodoro" && globalModeEnabled;
 
   return (
     <Sidebar className={sidebarClass}>
@@ -167,6 +173,15 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
       </SidebarContent>
       <SidebarFooter className="p-4">
         <div className="space-y-2">
+          <Separator />
+
+          {/* 미니 타이머 컴포넌트 - 현재 포모도로 페이지가 아닐 때만 표시 */}
+          {showMiniTimer && (
+            <div className="mt-2 mb-2">
+              <MiniTimerContainer />
+            </div>
+          )}
+
           <Separator />
         </div>
       </SidebarFooter>

@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ENABLE_TEST_MODE_UI } from "./config";
 
 interface PomodoroInfoProps {
   className?: string;
@@ -106,7 +107,7 @@ export function PomodoroInfo({ className }: PomodoroInfoProps) {
         </AccordionItem>
         <AccordionItem value="item-3">
           <AccordionTrigger className="text-sm font-medium">
-            새로운 기능 안내
+            주요 기능 소개
           </AccordionTrigger>
           <AccordionContent>
             <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
@@ -131,45 +132,54 @@ export function PomodoroInfo({ className }: PomodoroInfoProps) {
                 수와 집중 시간을 확인할 수 있습니다.
               </li>
               <li>
-                <span className="font-medium">테스트 모드</span>: 포모도로
-                타이머의 기능을 빠르게 테스트할 수 있는 모드입니다. 타이머
-                시간을 초 단위로 설정하여 전체 흐름을 확인할 수 있습니다.
+                <span className="font-medium">백그라운드 실행 모드</span>: 다른
+                도구로 전환해도 타이머가 계속 작동합니다. (다른 웹사이트로
+                이동하면 작동하지 않습니다)
               </li>
+              {ENABLE_TEST_MODE_UI && (
+                <li>
+                  <span className="font-medium">테스트 모드</span>: 포모도로
+                  타이머의 기능을 빠르게 테스트할 수 있는 모드입니다. 타이머
+                  시간을 초 단위로 설정하여 전체 흐름을 확인할 수 있습니다.
+                </li>
+              )}
             </ul>
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="item-4">
-          <AccordionTrigger className="text-sm font-medium">
-            테스트 모드 사용법
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
-              <p>
-                테스트 모드는 포모도로 타이머의 기능을 빠르게 확인하기 위한 임시
-                기능입니다:
-              </p>
-              <ol className="list-decimal list-inside space-y-2">
-                <li>
-                  우측 상단의 '테스트 모드' 버튼을 클릭하여 테스트 설정을
-                  표시합니다.
-                </li>
-                <li>테스트 모드 스위치를 켜서 활성화합니다.</li>
-                <li>
-                  원하는 테스트 시간을 초 단위로 설정합니다 (기본값: 10초).
-                </li>
-                <li>타이머를 시작하면 설정한 시간으로 작동합니다.</li>
-                <li>
-                  타이머가 실행 중일 때 빨리감기 버튼을 클릭하면 타이머가 5초로
-                  줄어듭니다.
-                </li>
-                <li>
-                  테스트가 끝나면 테스트 모드를 비활성화하여 일반 모드로
-                  돌아갑니다.
-                </li>
-              </ol>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+        {ENABLE_TEST_MODE_UI && (
+          <AccordionItem value="item-4">
+            <AccordionTrigger className="text-sm font-medium">
+              테스트 모드 사용법
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                <p>
+                  테스트 모드는 포모도로 타이머의 기능을 빠르게 확인하기 위한
+                  임시 기능입니다:
+                </p>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>
+                    우측 상단의 '테스트 모드' 버튼을 클릭하여 테스트 설정을
+                    표시합니다.
+                  </li>
+                  <li>테스트 모드 스위치를 켜서 활성화합니다.</li>
+                  <li>
+                    원하는 테스트 시간을 초 단위로 설정합니다 (기본값: 10초).
+                  </li>
+                  <li>타이머를 시작하면 설정한 시간으로 작동합니다.</li>
+                  <li>
+                    타이머가 실행 중일 때 빨리감기 버튼을 클릭하면 타이머가
+                    5초로 줄어듭니다.
+                  </li>
+                  <li>
+                    테스트가 끝나면 테스트 모드를 비활성화하여 일반 모드로
+                    돌아갑니다.
+                  </li>
+                </ol>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
       </Accordion>
     </div>
   );

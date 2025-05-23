@@ -1,29 +1,206 @@
 {
   "tasks": [
     {
-      "id": "6a98f352-fdeb-4a13-b077-96f8e4300bcf",
-      "name": "MobileToolSidebar 컴포넌트 적용하기",
-      "description": "app/tools/layout.tsx 파일에서 모바일 환경에서 사용하던 ToolSidebar 컴포넌트를 새로 구현된 MobileToolSidebar 컴포넌트로 교체합니다.",
+      "id": "616f345f-6695-4a93-b199-c5caa9579326",
+      "name": "PomodoroContext 모듈화 리팩토링",
+      "description": "현재 758줄에 달하는 PomodoroContext.tsx 파일을 기능별로 분리하여 모듈화합니다. 타이머 로직, 알림 관리, 통계 관리, 설정 관리 등 관심사 분리를 통해 코드 유지보수성을 향상시킵니다.",
+      "notes": "기존 기능을 유지하면서 코드 구조만 개선하는 작업입니다. 기능 변경은 없으며, 모든 public API는 동일하게 유지되어야 합니다.",
       "status": "已完成",
       "dependencies": [],
-      "createdAt": "2025-05-20T15:53:50.603Z",
-      "updatedAt": "2025-05-20T15:54:59.002Z",
+      "createdAt": "2025-05-22T06:06:27.253Z",
+      "updatedAt": "2025-05-22T06:11:08.570Z",
       "relatedFiles": [
         {
-          "path": "app/tools/layout.tsx",
+          "path": "components/tools/pomodoro/PomodoroContext.tsx",
           "type": "TO_MODIFY",
-          "description": "모바일 환경에서 ToolSidebar 대신 MobileToolSidebar를 사용하도록 수정"
+          "description": "리팩토링할 주요 파일"
         },
         {
-          "path": "components/layout/MobileToolSidebar.tsx",
-          "type": "REFERENCE",
-          "description": "적용할 MobileToolSidebar 컴포넌트"
+          "path": "components/tools/pomodoro/hooks",
+          "type": "TO_MODIFY",
+          "description": "새로운 훅을 추가할 디렉토리"
         }
       ],
-      "implementationGuide": "1. app/tools/layout.tsx 파일을 열어 imports 부분에 MobileToolSidebar 컴포넌트를 추가합니다.\n2. SheetContent 내부에서 ToolSidebar를 렌더링하는 부분을 찾아 MobileToolSidebar로 교체합니다.\n3. 이때 SidebarProvider는 더 이상 필요하지 않을 수 있으므로 MobileToolSidebar 컴포넌트의 구현을 확인하고 필요 여부를 판단합니다.\n4. 변경 후 동작을 테스트합니다.",
-      "verificationCriteria": "1. app/tools/layout.tsx 파일에 MobileToolSidebar import 구문이 추가되었는지 확인\n2. SheetContent 내부에서 ToolSidebar 대신 MobileToolSidebar가 렌더링되는지 확인\n3. 모바일 환경에서 사이드바가 정상적으로 동작하는지 테스트\n4. 기존 기능과 스타일이 유지되는지 확인",
-      "summary": "MobileToolSidebar 컴포넌트를 성공적으로 적용했습니다. app/tools/layout.tsx 파일에 MobileToolSidebar import를 추가하고, 모바일 사이드바에서 ToolSidebar 대신 MobileToolSidebar를 사용하도록 변경했습니다. 이전에 사용하던 SidebarProvider 래퍼도 필요 없어 제거했습니다. 변경 사항을 깃에 커밋하여 작업을 완료했습니다.",
-      "completedAt": "2025-05-20T15:54:59.001Z"
+      "implementationGuide": "1. PomodoroContext.tsx 파일을 분석하여 기능별 모듈 구조 설계\n2. hooks 디렉토리에 useTimer, useNotification, useSettings, useStats 등의 커스텀 훅 생성\n3. 각 훅에서 관련 상태와 함수 구현\n4. PomodoroContext에서 각 훅을 사용하여 전체 상태 관리\n5. 타입 정의를 별도의 types.ts 파일로 분리",
+      "verificationCriteria": "1. 기존 기능이 모두 정상 작동하는지 확인\n2. 코드가 기능별로 적절히 모듈화되었는지 확인\n3. 타입 정의가 명확하게 분리되었는지 확인\n4. 불필요한 리렌더링이 발생하지 않는지 확인",
+      "analysisResult": "포모도로 타이머 개선 작업의 최종 목표는 사용자 경험과 기능성을 향상시키는 것입니다. 코드베이스 분석 결과, 현재 구현은 Context API를 통한 상태 관리와 기본적인 브라우저 API 통합이 구현되어 있으나, 모듈화 및 기능 확장이 필요합니다. 주요 개선 방향은 1) 코드 구조 개선 및 모듈화, 2) 알림 시스템 개선, 3) 페이지 가시성 및 전역 모드 기능 강화, 4) 통계 기능 및 시각화 개선, 5) 모바일 최적화 및 사용자 설정 강화입니다.",
+      "summary": "PomodoroContext.tsx 파일을 성공적으로 모듈화하여 코드의 유지보수성을 향상시켰습니다. 타입 정의, 타이머 로직, 알림, 설정, 통계 관련 기능을 각각의 독립적인 모듈로 분리하고 이를 PomodoroContext에서 통합하여 관리하도록 구현했습니다. 코드의 기능은 변경하지 않고 구조만 개선하여 향후 기능 확장과 유지보수가 용이하도록 하였습니다.",
+      "completedAt": "2025-05-22T06:11:08.568Z"
+    },
+    {
+      "id": "de4d82a4-dbfb-4b20-92b4-658fe6fe0885",
+      "name": "알림 시스템 개선",
+      "description": "현재 브라우저 Notification API만 사용하는 알림 시스템을 확장하여 다양한 알림 옵션과 폴백 메커니즘을 제공합니다. 소리, 시각적 알림, 사용자 정의 메시지 등 알림 옵션을 추가합니다.",
+      "notes": "사용자가 권한을 거부한 경우에도 페이지 내 시각적 알림을 통해 타이머 완료를 알릴 수 있어야 합니다.",
+      "status": "待處理",
+      "dependencies": [
+        {
+          "taskId": "616f345f-6695-4a93-b199-c5caa9579326"
+        }
+      ],
+      "createdAt": "2025-05-22T06:06:27.253Z",
+      "updatedAt": "2025-05-22T06:06:27.253Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro/hooks/useNotification.tsx",
+          "type": "CREATE",
+          "description": "알림 관련 로직을 담당할 새 훅"
+        },
+        {
+          "path": "components/tools/pomodoro/NotificationAlert.tsx",
+          "type": "TO_MODIFY",
+          "description": "알림 설정 UI 컴포넌트"
+        },
+        {
+          "path": "public/sounds",
+          "type": "TO_MODIFY",
+          "description": "알림 소리 파일 디렉토리"
+        }
+      ],
+      "implementationGuide": "1. useNotification 훅에 다양한 알림 방식 추가 (소리, 시각적 알림)\n2. 알림 설정 UI 컴포넌트 개선\n3. 사용자 정의 알림 메시지 기능 추가\n4. 권한 없을 때의 폴백 메커니즘 구현\n5. 알림 소리 선택 기능 추가",
+      "verificationCriteria": "1. 다양한 알림 방식이 정상 작동하는지 확인\n2. 권한 없을 때 폴백 메커니즘이 작동하는지 확인\n3. 사용자 정의 알림 설정이 저장되고 적용되는지 확인\n4. 다양한 브라우저에서 알림 기능이 정상 작동하는지 확인",
+      "analysisResult": "포모도로 타이머 개선 작업의 최종 목표는 사용자 경험과 기능성을 향상시키는 것입니다. 코드베이스 분석 결과, 현재 구현은 Context API를 통한 상태 관리와 기본적인 브라우저 API 통합이 구현되어 있으나, 모듈화 및 기능 확장이 필요합니다. 주요 개선 방향은 1) 코드 구조 개선 및 모듈화, 2) 알림 시스템 개선, 3) 페이지 가시성 및 전역 모드 기능 강화, 4) 통계 기능 및 시각화 개선, 5) 모바일 최적화 및 사용자 설정 강화입니다."
+    },
+    {
+      "id": "ae77ad25-b484-4ac8-8967-a2498d198dc3",
+      "name": "페이지 가시성 및 전역 모드 기능 강화",
+      "description": "페이지 가시성 API와 전역 모드 기능을 개선하여 다른 탭에서도 타이머가 계속 작동하도록 하며, 여러 탭에서 타이머 상태를 동기화합니다.",
+      "notes": "탭 간 동기화는 선택적으로 활성화/비활성화할 수 있어야 합니다. 성능 및 배터리 소모를 고려하여 최적화가 필요합니다.",
+      "status": "待處理",
+      "dependencies": [
+        {
+          "taskId": "616f345f-6695-4a93-b199-c5caa9579326"
+        }
+      ],
+      "createdAt": "2025-05-22T06:06:27.253Z",
+      "updatedAt": "2025-05-22T06:06:27.253Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro/hooks/usePageVisibility.tsx",
+          "type": "TO_MODIFY",
+          "description": "페이지 가시성 관련 훅"
+        },
+        {
+          "path": "components/tools/pomodoro/hooks/useSyncedTimer.tsx",
+          "type": "CREATE",
+          "description": "탭 간 타이머 동기화를 위한 새 훅"
+        },
+        {
+          "path": "components/tools/pomodoro/SettingsPanel.tsx",
+          "type": "TO_MODIFY",
+          "description": "전역 모드 설정 UI"
+        }
+      ],
+      "implementationGuide": "1. usePageVisibility 훅 개선하여 다양한 브라우저 지원 강화\n2. localStorage와 BroadcastChannel API를 활용한 탭 간 상태 동기화 구현\n3. 전역 모드 설정 UI 개선\n4. 백그라운드 모드에서의 타이머 동작 최적화\n5. 페이지 복귀 시 타이머 상태 복원 로직 개선",
+      "verificationCriteria": "1. 여러 탭에서 타이머 상태가 동기화되는지 확인\n2. 페이지 비활성화 후 복귀 시 타이머 상태가 올바르게 복원되는지 확인\n3. 전역 모드 설정이 저장되고 적용되는지 확인\n4. 백그라운드에서 타이머가 정확하게 작동하는지 확인",
+      "analysisResult": "포모도로 타이머 개선 작업의 최종 목표는 사용자 경험과 기능성을 향상시키는 것입니다. 코드베이스 분석 결과, 현재 구현은 Context API를 통한 상태 관리와 기본적인 브라우저 API 통합이 구현되어 있으나, 모듈화 및 기능 확장이 필요합니다. 주요 개선 방향은 1) 코드 구조 개선 및 모듈화, 2) 알림 시스템 개선, 3) 페이지 가시성 및 전역 모드 기능 강화, 4) 통계 기능 및 시각화 개선, 5) 모바일 최적화 및 사용자 설정 강화입니다."
+    },
+    {
+      "id": "986f99e7-15ce-481b-b830-a7948c71a67f",
+      "name": "세션 통계 및 시각화 기능 개선",
+      "description": "세션 통계 기능을 확장하여 일별, 주별, 월별 통계를 제공하고, 시각적으로 표현할 수 있는 차트 기능을 추가합니다. 작업 태그 기능을 통해 작업별 시간 추적이 가능하도록 합니다.",
+      "notes": "통계 데이터는 localStorage에 저장되며, 데이터 구조 변경 시 기존 데이터와의 호환성을 고려해야 합니다.",
+      "status": "待處理",
+      "dependencies": [
+        {
+          "taskId": "616f345f-6695-4a93-b199-c5caa9579326"
+        }
+      ],
+      "createdAt": "2025-05-22T06:06:27.253Z",
+      "updatedAt": "2025-05-22T06:06:27.253Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro/hooks/useStats.tsx",
+          "type": "CREATE",
+          "description": "통계 관련 로직을 담당할 새 훅"
+        },
+        {
+          "path": "components/tools/pomodoro/StatsPanel.tsx",
+          "type": "TO_MODIFY",
+          "description": "통계 표시 패널"
+        },
+        {
+          "path": "components/tools/pomodoro/charts",
+          "type": "CREATE",
+          "description": "통계 차트 컴포넌트 디렉토리"
+        },
+        {
+          "path": "components/tools/pomodoro/TagsInput.tsx",
+          "type": "CREATE",
+          "description": "작업 태그 입력 컴포넌트"
+        }
+      ],
+      "implementationGuide": "1. useStats 훅 구현하여 통계 데이터 관리\n2. 세션 데이터 저장 구조 개선 (날짜, 시간, 태그 등 정보 추가)\n3. Recharts 라이브러리를 활용한 통계 차트 컴포넌트 구현\n4. 작업 태그 입력 및 관리 UI 구현\n5. 통계 데이터 필터링 및 내보내기 기능 구현",
+      "verificationCriteria": "1. 통계 데이터가 정확하게 저장되고 로드되는지 확인\n2. 차트가 데이터를 올바르게 시각화하는지 확인\n3. 작업 태그 기능이 정상 작동하는지 확인\n4. 기존 데이터와의 호환성이 유지되는지 확인",
+      "analysisResult": "포모도로 타이머 개선 작업의 최종 목표는 사용자 경험과 기능성을 향상시키는 것입니다. 코드베이스 분석 결과, 현재 구현은 Context API를 통한 상태 관리와 기본적인 브라우저 API 통합이 구현되어 있으나, 모듈화 및 기능 확장이 필요합니다. 주요 개선 방향은 1) 코드 구조 개선 및 모듈화, 2) 알림 시스템 개선, 3) 페이지 가시성 및 전역 모드 기능 강화, 4) 통계 기능 및 시각화 개선, 5) 모바일 최적화 및 사용자 설정 강화입니다."
+    },
+    {
+      "id": "daf2ace0-33e2-402b-ba51-871da499cc5f",
+      "name": "모바일 최적화 및 반응형 디자인 개선",
+      "description": "모바일 환경에서의 사용성을 향상시키기 위해 반응형 디자인을 개선하고, 터치 인터페이스에 최적화된 UI 컴포넌트를 구현합니다.",
+      "notes": "모바일 최적화 시 성능과 배터리 소모를 고려해야 합니다. 터치 영역은 최소 44x44px 이상으로 설계해야 합니다.",
+      "status": "待處理",
+      "dependencies": [
+        {
+          "taskId": "616f345f-6695-4a93-b199-c5caa9579326"
+        }
+      ],
+      "createdAt": "2025-05-22T06:06:27.253Z",
+      "updatedAt": "2025-05-22T06:06:27.253Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro/hooks/useDevice.tsx",
+          "type": "CREATE",
+          "description": "장치 감지 및 최적화를 위한 훅"
+        },
+        {
+          "path": "components/tools/pomodoro/TimerContainer.tsx",
+          "type": "TO_MODIFY",
+          "description": "타이머 컨테이너 컴포넌트"
+        },
+        {
+          "path": "components/tools/pomodoro/MobileControls.tsx",
+          "type": "CREATE",
+          "description": "모바일용 컨트롤 컴포넌트"
+        }
+      ],
+      "implementationGuide": "1. 모바일 장치 감지 및 최적화를 위한 useDevice 훅 구현\n2. 터치 인터페이스를 위한 버튼 크기 및 간격 조정\n3. 모바일에 최적화된 레이아웃 구현 (정보 우선순위 반영)\n4. 화면 방향 변경에 대응하는 레이아웃 조정\n5. 모바일 기기의 화면 잠금 상태 대응 로직 구현",
+      "verificationCriteria": "1. 다양한 화면 크기에서 UI가 적절하게 조정되는지 확인\n2. 터치 인터페이스가 사용하기 편리한지 확인\n3. 화면 방향 변경 시 레이아웃이 올바르게 조정되는지 확인\n4. 모바일 기기의 화면 잠금 상태에서도 타이머가 정상 작동하는지 확인",
+      "analysisResult": "포모도로 타이머 개선 작업의 최종 목표는 사용자 경험과 기능성을 향상시키는 것입니다. 코드베이스 분석 결과, 현재 구현은 Context API를 통한 상태 관리와 기본적인 브라우저 API 통합이 구현되어 있으나, 모듈화 및 기능 확장이 필요합니다. 주요 개선 방향은 1) 코드 구조 개선 및 모듈화, 2) 알림 시스템 개선, 3) 페이지 가시성 및 전역 모드 기능 강화, 4) 통계 기능 및 시각화 개선, 5) 모바일 최적화 및 사용자 설정 강화입니다."
+    },
+    {
+      "id": "014e825e-30a5-4b75-b635-a2f179ab90cf",
+      "name": "사용자 설정 관리 기능 강화",
+      "description": "사용자 설정 관리 기능을 강화하여 더 많은 사용자 설정 옵션을 제공하고, 설정 프로필 관리 및 데이터 백업/복원 기능을 추가합니다.",
+      "notes": "설정 데이터 구조 변경 시 기존 설정과의 호환성을 고려해야 합니다. 사용자 경험을 해치지 않는 범위 내에서 설정 옵션을 제공해야 합니다.",
+      "status": "待處理",
+      "dependencies": [
+        {
+          "taskId": "616f345f-6695-4a93-b199-c5caa9579326"
+        }
+      ],
+      "createdAt": "2025-05-22T06:06:27.253Z",
+      "updatedAt": "2025-05-22T06:06:27.253Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro/hooks/useSettings.tsx",
+          "type": "CREATE",
+          "description": "설정 관련 로직을 담당할 새 훅"
+        },
+        {
+          "path": "components/tools/pomodoro/SettingsPanel.tsx",
+          "type": "TO_MODIFY",
+          "description": "설정 패널 컴포넌트"
+        },
+        {
+          "path": "components/tools/pomodoro/ProfileManager.tsx",
+          "type": "CREATE",
+          "description": "설정 프로필 관리 컴포넌트"
+        }
+      ],
+      "implementationGuide": "1. useSettings 훅 구현하여 설정 데이터 관리\n2. 설정 항목 확장 (포모도로/휴식 시간 자동 조정, 소리 볼륨, 포커스 모드 등)\n3. 설정 프로필 저장 및 전환 기능 구현\n4. 설정 데이터 JSON 형식 내보내기/가져오기 기능 구현\n5. 설정 UI 개선 및 그룹화",
+      "verificationCriteria": "1. 확장된 설정 옵션이 정상 작동하는지 확인\n2. 설정 프로필 저장 및 전환이 올바르게 작동하는지 확인\n3. 설정 데이터 내보내기/가져오기가 정상 작동하는지 확인\n4. 기존 설정과의 호환성이 유지되는지 확인",
+      "analysisResult": "포모도로 타이머 개선 작업의 최종 목표는 사용자 경험과 기능성을 향상시키는 것입니다. 코드베이스 분석 결과, 현재 구현은 Context API를 통한 상태 관리와 기본적인 브라우저 API 통합이 구현되어 있으나, 모듈화 및 기능 확장이 필요합니다. 주요 개선 방향은 1) 코드 구조 개선 및 모듈화, 2) 알림 시스템 개선, 3) 페이지 가시성 및 전역 모드 기능 강화, 4) 통계 기능 및 시각화 개선, 5) 모바일 최적화 및 사용자 설정 강화입니다."
     }
   ]
 }

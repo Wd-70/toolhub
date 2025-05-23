@@ -1,0 +1,27 @@
+{
+  "tasks": [
+    {
+      "id": "a68d1b5e-dd62-47ec-83de-acd2448681a6",
+      "name": "PomodoroContext에 배경 음악 관련 상태 및 함수 추가",
+      "description": "PomodoroContext에 배경 음악 관련 상태(작업/휴식 모드별 음악, 재생 상태, 볼륨 등)와 관련 함수(재생, 일시정지, 음악 변경 등)를 추가합니다.",
+      "status": "已完成",
+      "dependencies": [],
+      "createdAt": "2025-05-22T05:24:01.181Z",
+      "updatedAt": "2025-05-22T05:32:30.284Z",
+      "relatedFiles": [
+        {
+          "path": "components/tools/pomodoro/PomodoroContext.tsx",
+          "type": "TO_MODIFY",
+          "description": "배경 음악 관련 상태 및 함수 추가",
+          "lineStart": 1,
+          "lineEnd": 758
+        }
+      ],
+      "implementationGuide": "1. PomodoroContext.tsx 파일에 BackgroundMusic 타입 정의 추가\n2. 배경 음악 관련 상태 변수 추가(workBackgroundMusic, breakBackgroundMusic, isMusicPlaying, musicVolume 등)\n3. 오디오 객체를 위한 musicPlayerRef 추가\n4. 음악 재생 및 제어 함수 구현(playBackgroundMusic, toggleMusicPlayback, setWorkMusic, setBreakMusic 등)\n5. 컨텍스트 값과 Provider에 새 상태와 함수 추가",
+      "verificationCriteria": "- BackgroundMusic 타입이 올바르게 정의되었는지 확인\n- 필요한 모든 상태 변수와 함수가 추가되었는지 확인\n- 기존 코드와의 일관성 유지\n- 모든 상태와 함수가 컨텍스트를 통해 노출되는지 확인",
+      "analysisResult": "# 포모도로 타이머 배경 음악 기능 추가 분석\n\n이 프로젝트는 포모도로 타이머에 배경 음악 선택 기능을 추가하는 것입니다. 사용자가 집중 모드와 휴식 모드에서 각각 다른 배경 음악을 선택할 수 있게 하고, 음악 재생/정지 기능을 제공합니다. 또한 사용자가 자신의 음악 파일을 업로드하거나 기본 제공 음악 중에서 선택할 수 있는 기능을 구현합니다.\n\n## 주요 요구사항\n1. 작업 모드와 휴식 모드별 배경 음악 설정\n2. 기본 제공 배경 음악 (화이트 노이즈, 자연 소리 등)\n3. 사용자 정의 음악 업로드 기능\n4. 음악 재생/정지 제어 기능\n5. 모드 변경 시 자동 음악 전환\n\n## 구현 방식\n- PomodoroContext에 배경 음악 관련 상태와 함수 추가\n- 기본 배경 음악 파일 제공\n- 설정 패널에 음악 선택 UI 추가\n- 사용자 정의 음악 파일 업로드 및 관리 기능 구현\n- 타이머 컨트롤에 음악 재생/정지 버튼 추가\n- 모드 변경 시 부드러운 음악 전환 (크로스페이딩) 구현\n\n이 기능은 기존 포모도로 타이머의 사용자 경험을 향상시키고, 집중력과 생산성을 높이는 데 도움이 될 것입니다.",
+      "summary": "PomodoroContext에 배경 음악 관련 기능을 성공적으로 추가했습니다. BackgroundMusic 타입이 올바르게 정의되었고, 필요한 모든 상태 변수와 함수가 추가되었습니다. 특히 현재 모드에 따른 음악 재생, 토글 기능, 사용자 정의 음악 관리 기능, 그리고 localStorage를 활용한 데이터 유지 기능이 잘 구현되었습니다. 모든 기능이 컨텍스트를 통해 노출되며 기존 코드와의 일관성도 유지되었습니다.",
+      "completedAt": "2025-05-22T05:32:30.283Z"
+    }
+  ]
+}

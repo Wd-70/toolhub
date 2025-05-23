@@ -149,9 +149,9 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
       </div>
       <div className="flex items-center justify-between pt-2">
         <Label htmlFor="global-mode" className="cursor-pointer">
-          전역 모드 사용
+          백그라운드 실행 모드 사용
           <p className="text-xs text-gray-500">
-            다른 페이지에서도 타이머가 계속 작동합니다
+            다른 도구로 전환해도 타이머가 계속 작동합니다
           </p>
         </Label>
         <Switch

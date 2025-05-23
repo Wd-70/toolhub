@@ -28,7 +28,7 @@ export function TimerControls({ className }: TimerControlsProps) {
   } = usePomodoroContext();
 
   return (
-    <div className={`flex space-x-2 ${className}`}>
+    <div className={`w-full flex justify-center space-x-2 ${className}`}>
       <Button
         variant="outline"
         size="icon"

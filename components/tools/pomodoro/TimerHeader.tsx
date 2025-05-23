@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { usePomodoroContext } from "./PomodoroContext";
+import { ENABLE_TEST_MODE_UI } from "./config";
 
 interface TimerHeaderProps {
   className?: string;
@@ -30,28 +31,30 @@ export function TimerHeader({ className }: TimerHeaderProps) {
           <CardTitle>Pomodoro Timer</CardTitle>
         </div>
         <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`h-8 ${
-                    testMode
-                      ? "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700"
-                      : ""
-                  }`}
-                  onClick={() => setShowTestControls(!showTestControls)}
-                >
-                  <Zap className="h-4 w-4 mr-1" />
-                  테스트 모드
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>타이머를 빠르게 테스트하기 위한 모드입니다.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {ENABLE_TEST_MODE_UI && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 ${
+                      testMode
+                        ? "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700"
+                        : ""
+                    }`}
+                    onClick={() => setShowTestControls(!showTestControls)}
+                  >
+                    <Zap className="h-4 w-4 mr-1" />
+                    테스트 모드
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>타이머를 빠르게 테스트하기 위한 모드입니다.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       </div>
       <CardDescription>

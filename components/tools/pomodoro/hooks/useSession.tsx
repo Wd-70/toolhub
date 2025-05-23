@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { TimerMode, SessionData } from "../types";
 import { useTimer } from "./useTimer";
 
@@ -30,6 +30,9 @@ export function useSession({
   const [completedWorkSessions, setCompletedWorkSessions] = useState<number>(0);
   const [currentSessionNumber, setCurrentSessionNumber] = useState<number>(1);
   const [sessions, setSessions] = useState<SessionData[]>([]);
+  const [shouldStartNextSession, setShouldStartNextSession] =
+    useState<boolean>(false);
+  const isSessionTransitioning = useRef<boolean>(false);
 
   // 현재 모드에 따른 타이머 시간 계산
   const getCurrentDuration = useCallback(() => {
@@ -63,6 +66,9 @@ export function useSession({
     if (onSessionComplete) {
       onSessionComplete(mode, sessionDuration);
     }
+
+    // 세션 전환 중임을 표시
+    isSessionTransitioning.current = true;
 
     // 다음 모드와 시간 계산
     let nextMode: TimerMode;
@@ -99,6 +105,11 @@ export function useSession({
 
     // 모드 변경
     setMode(nextMode);
+
+    // 자동 시작 플래그 설정
+    if (autoStartNextSession) {
+      setShouldStartNextSession(true);
+    }
   }, [
     mode,
     workDuration,
@@ -108,6 +119,7 @@ export function useSession({
     currentSessionNumber,
     workSessionsBeforeLongBreak,
     onSessionComplete,
+    autoStartNextSession,
   ]);
 
   // useTimer 훅 사용
@@ -124,12 +136,24 @@ export function useSession({
       // 일시정지 상태가 아닐 때만 타이머 시간을 새로 설정
       // 이렇게 하면 모드 변경 시에도 일시정지된 시간이 유지됨
       const currentTime = timer.timeLeft;
-      if (currentTime === 0) {
-        // 타이머가 완료되었거나 초기 상태일 때만 초기화
+      if (currentTime === 0 || isSessionTransitioning.current) {
+        // 타이머가 완료되었거나 세션 전환 중일 때 초기화
         timer.setTimeLeft(getCurrentDuration());
+        isSessionTransitioning.current = false;
       }
     }
   }, [getCurrentDuration, mode, timer]);
+
+  // 자동 시작 기능 처리를 위한 useEffect
+  useEffect(() => {
+    if (shouldStartNextSession && !timer.isActive) {
+      // 다음 세션 자동 시작
+      setTimeout(() => {
+        timer.startTimer();
+        setShouldStartNextSession(false);
+      }, 100);
+    }
+  }, [shouldStartNextSession, timer]);
 
   // 세션 리셋 함수
   const resetSession = useCallback(() => {
@@ -144,6 +168,9 @@ export function useSession({
 
     // 타이머 리셋
     timer.resetTimer();
+
+    // 자동 시작 플래그 초기화
+    setShouldStartNextSession(false);
   }, [timer]);
 
   // 빠른 테스트를 위한 함수

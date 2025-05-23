@@ -37,7 +37,7 @@ export function useTimer({
     if (!isActive) {
       setTimeLeft(initialDuration);
     }
-  }, [initialDuration, isActive]);
+  }, [initialDuration]);
 
   // 현재 페이지가 포모도로 페이지인지 업데이트
   useEffect(() => {
