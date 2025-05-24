@@ -137,7 +137,7 @@ export default function Home() {
               {tools.map((tool) => (
                 <Link
                   key={tool.id}
-                  href={`/tools/${tool.id}`}
+                  href={`https://${tool.id}.toolhub.services`}
                   className="group"
                 >
                   <Card
