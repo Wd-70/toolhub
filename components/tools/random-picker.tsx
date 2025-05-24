@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DOMAIN_CONFIG } from "@/lib/constants";
 
 type ItemType = {
   id: string;
@@ -54,17 +55,9 @@ const DEBUG_MODE_ENABLED = false; // 배포용으로는 false, 개발 중 디버
 const FALLBACK_IMAGE_URL =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuyekOujjOyKpO2KuDwvdGV4dD48L3N2Zz4=";
 
-// 기본 경로 우선순위
-const IMAGE_PATH_FORMATS = [
-  "./numbers/%num%.png",
-  "/numbers/%num%.png",
-  "../public/numbers/%num%.png",
-  "numbers/%num%.png",
-];
-
 // 이미지 URL 생성 함수
 const getNumberImageUrl = (num: number): string => {
-  return IMAGE_PATH_FORMATS[0].replace("%num%", num.toString());
+  return `${DOMAIN_CONFIG.getMainUrl()}/numbers/${num}.png`;
 };
 
 // 이미지 업로드 컴포넌트
@@ -1010,28 +1003,20 @@ export default function RandomPicker() {
       if (numMatch && numMatch[1]) {
         const num = numMatch[1];
 
-        // 다른 경로 형식 시도
-        let foundValidPath = false;
-        for (const pathFormat of IMAGE_PATH_FORMATS) {
-          if (originalSrc.includes(pathFormat.replace("%num%", num))) {
-            continue; // 이미 실패한 경로는 건너뜀
-          }
-
-          const newSrc = pathFormat.replace("%num%", num);
+        try {
+          // 기본 URL로 재시도
+          const newSrc = `${DOMAIN_CONFIG.getMainUrl()}/numbers/${num}.png`;
           addDebugLog(`경로 수정 시도: ${originalSrc} -> ${newSrc}`);
 
           img.src = newSrc;
-          foundValidPath = true;
-          break;
-        }
-
-        if (foundValidPath) {
           return;
+        } catch (error) {
+          addDebugLog(`이미지 경로 변경 오류: ${error}`);
         }
       }
     }
 
-    // 모든 경로가 실패하면 폴백 이미지 사용
+    // 모든 시도가 실패하면 폴백 이미지 사용
     addDebugLog(`이미지 로딩 오류: ${originalSrc}, 폴백 이미지 사용`);
     img.src = FALLBACK_IMAGE_URL;
     img.onerror = null; // 무한 오류 방지
