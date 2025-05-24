@@ -26,10 +26,6 @@ export function useTimer({
   // 타이머 참조
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 페이지 가시성 감지
-  const { isPomodoro } = usePageVisibility();
-  const isPomodoroRef = useRef(isPomodoro);
-
   // 외부 duration이 변경되면 타이머 시간 업데이트 (타이머가 실행 중이 아닐 때만)
   useEffect(() => {
     if (!isActive) {
@@ -58,29 +54,10 @@ export function useTimer({
     }
   }, [isActive, timeLeft, stopTimer]);
 
-  // 현재 페이지가 포모도로 페이지인지 업데이트
-  useEffect(() => {
-    // 이전 상태 업데이트
-    const previousIsPomodoro = isPomodoroRef.current;
-    isPomodoroRef.current = isPomodoro;
-
-    // 포모도로 페이지에서 벗어났고, 타이머가 활성화된 경우 -> 타이머 멈춤
-    if (previousIsPomodoro && !isPomodoro && isActive) {
-      console.log("페이지 전환으로 타이머 정지");
-      pauseTimer();
-    }
-  }, [isPomodoro, isActive, pauseTimer]);
-
   // 타이머 시작 함수
   const startTimer = useCallback(() => {
     // 이미 타이머가 활성화되었으면 아무것도 하지 않음
     if (isActive) return;
-
-    // 포모도로 페이지에서는 항상 타이머 시작 가능
-    if (!isPomodoroRef.current) {
-      console.log("포모도로 페이지가 아니어서 타이머를 시작하지 않습니다");
-      return;
-    }
 
     console.log("타이머 시작 - 현재 시간:", timeLeft);
 
@@ -110,13 +87,6 @@ export function useTimer({
   // 타이머 실행 효과
   useEffect(() => {
     if (isActive) {
-      // 포모도로 페이지가 아니면 타이머 시작하지 않음
-      if (!isPomodoroRef.current) {
-        console.log("포모도로 페이지가 아니어서 타이머 활성화 취소");
-        setIsActive(false);
-        return;
-      }
-
       console.log("타이머 인터벌 시작");
 
       // 이전 타이머 정리
