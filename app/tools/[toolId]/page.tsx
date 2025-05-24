@@ -58,7 +58,7 @@ export default function ToolPage() {
       textColor: "text-emerald-900 dark:text-emerald-50",
       borderColor: "border-emerald-200 dark:border-emerald-800",
     },
-    converter: {
+    "unit-converter": {
       name: "Unit Converter",
       component: <UnitConverter />,
       color: "bg-amber-50 dark:bg-amber-950",
