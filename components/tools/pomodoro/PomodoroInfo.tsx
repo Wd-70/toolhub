@@ -131,11 +131,6 @@ export function PomodoroInfo({ className }: PomodoroInfoProps) {
                 <span className="font-medium">통계 기능</span>: 오늘 완료한 세션
                 수와 집중 시간을 확인할 수 있습니다.
               </li>
-              <li>
-                <span className="font-medium">백그라운드 실행 모드</span>: 다른
-                도구로 전환해도 타이머가 계속 작동합니다. (다른 웹사이트로
-                이동하면 작동하지 않습니다)
-              </li>
               {ENABLE_TEST_MODE_UI && (
                 <li>
                   <span className="font-medium">테스트 모드</span>: 포모도로

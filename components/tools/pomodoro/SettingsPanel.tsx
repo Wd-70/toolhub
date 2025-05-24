@@ -148,19 +148,6 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
         />
       </div>
       <div className="flex items-center justify-between pt-2">
-        <Label htmlFor="global-mode" className="cursor-pointer">
-          백그라운드 실행 모드 사용
-          <p className="text-xs text-gray-500">
-            다른 도구로 전환해도 타이머가 계속 작동합니다
-          </p>
-        </Label>
-        <Switch
-          id="global-mode"
-          checked={globalModeEnabled}
-          onCheckedChange={setGlobalModeEnabled}
-        />
-      </div>
-      <div className="flex items-center justify-between pt-2">
         <Label htmlFor="show-notification" className="cursor-pointer">
           브라우저 알림 표시
         </Label>

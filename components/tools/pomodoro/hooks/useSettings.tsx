@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS: TimerSettings = {
   soundEnabled: true,
   volume: 0.5,
   showNotification: true,
-  globalModeEnabled: true,
+  globalModeEnabled: false,
   showTestControls: false,
   autoStartNextSession: true,
 };
