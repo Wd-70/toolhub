@@ -9,6 +9,12 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // 서브도메인에서도 정적 자산을 로드할 수 있도록 assetPrefix 설정
+  assetPrefix:
+    process.env.NODE_ENV === "production"
+      ? "https://toolhub.services"
+      : undefined,
+  // rewrites와 redirects를 더 간결하게 정리
   async rewrites() {
     return {
       beforeFiles: [
@@ -51,6 +57,7 @@ const nextConfig = {
       ],
     };
   },
+  // 리디렉션 설정 (이미 적용되어 잘 작동 중)
   async redirects() {
     return [
       // 도구 하위 경로로 직접 접근 시 해당 서브도메인으로 리디렉션
