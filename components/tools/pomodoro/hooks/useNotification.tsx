@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { DOMAIN_CONFIG } from "@/lib/constants";
 import { NotificationPermissionType } from "../types";
 
 interface NotificationOptions {
@@ -26,7 +27,9 @@ export function useNotification() {
   useEffect(() => {
     // 오디오 요소 생성
     if (typeof window !== "undefined") {
-      audioRef.current = new Audio("/sounds/notification.mp3");
+      // 메인 도메인을 기반으로 오디오 파일 URL 생성
+      const audioUrl = `${DOMAIN_CONFIG.getMainUrl()}/sounds/notification.mp3`;
+      audioRef.current = new Audio(audioUrl);
     }
 
     // 알림 권한 확인 및 상태 설정
@@ -73,10 +76,14 @@ export function useNotification() {
               notificationRef.current.close();
             }
 
+            // 아이콘 경로 설정
+            const iconUrl =
+              options.icon || `${DOMAIN_CONFIG.getMainUrl()}/favicon.ico`;
+
             // 새 알림 생성
             notificationRef.current = new Notification(options.title, {
               body: options.body,
-              icon: options.icon || "/favicon.ico",
+              icon: iconUrl,
               requireInteraction: options.requireInteraction || true,
             });
 
@@ -130,9 +137,10 @@ export function useNotification() {
             setShowNotification(true);
             // 테스트 알림 표시
             try {
+              const iconUrl = `${DOMAIN_CONFIG.getMainUrl()}/favicon.ico`;
               const notification = new Notification("알림 테스트", {
                 body: "알림이 성공적으로 활성화되었습니다.",
-                icon: "/favicon.ico",
+                icon: iconUrl,
               });
             } catch (error) {
               console.error("테스트 알림 생성 실패:", error);
