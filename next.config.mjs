@@ -10,157 +10,46 @@ const nextConfig = {
     unoptimized: true,
   },
   async rewrites() {
-    return [
-      // 코드 포매터 서브도메인 - 루트 경로만 처리
-      {
-        source: "/",
-        has: [
-          {
-            type: "host",
-            value: "code-formatter.toolhub.services",
-          },
-        ],
-        destination: "/tools/code-formatter",
-      },
-      // 색상 피커 서브도메인 - 루트 경로만 처리
-      {
-        source: "/",
-        has: [
-          {
-            type: "host",
-            value: "color-picker.toolhub.services",
-          },
-        ],
-        destination: "/tools/color-picker",
-      },
-      // 계산기 서브도메인 - 루트 경로만 처리
-      {
-        source: "/",
-        has: [
-          {
-            type: "host",
-            value: "calculator.toolhub.services",
-          },
-        ],
-        destination: "/tools/calculator",
-      },
-      // 포모도로 타이머 서브도메인 - 루트 경로만 처리
-      {
-        source: "/",
-        has: [
-          {
-            type: "host",
-            value: "pomodoro.toolhub.services",
-          },
-        ],
-        destination: "/tools/pomodoro",
-      },
-      // 마크다운 에디터 서브도메인 - 루트 경로만 처리
-      {
-        source: "/",
-        has: [
-          {
-            type: "host",
-            value: "markdown.toolhub.services",
-          },
-        ],
-        destination: "/tools/markdown",
-      },
-      // 단위 변환기 서브도메인 - 루트 경로만 처리
-      {
-        source: "/",
-        has: [
-          {
-            type: "host",
-            value: "unit-converter.toolhub.services",
-          },
-        ],
-        destination: "/tools/unit-converter",
-      },
-      // 랜덤 선택기 서브도메인 - 루트 경로만 처리
-      {
-        source: "/",
-        has: [
-          {
-            type: "host",
-            value: "random-picker.toolhub.services",
-          },
-        ],
-        destination: "/tools/random-picker",
-      },
-
-      // 서브도메인의 하위 경로 처리
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "code-formatter.toolhub.services",
-          },
-        ],
-        destination: "/tools/code-formatter/:path*",
-      },
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "color-picker.toolhub.services",
-          },
-        ],
-        destination: "/tools/color-picker/:path*",
-      },
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "calculator.toolhub.services",
-          },
-        ],
-        destination: "/tools/calculator/:path*",
-      },
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "pomodoro.toolhub.services",
-          },
-        ],
-        destination: "/tools/pomodoro/:path*",
-      },
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "markdown.toolhub.services",
-          },
-        ],
-        destination: "/tools/markdown/:path*",
-      },
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "unit-converter.toolhub.services",
-          },
-        ],
-        destination: "/tools/unit-converter/:path*",
-      },
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "random-picker.toolhub.services",
-          },
-        ],
-        destination: "/tools/random-picker/:path*",
-      },
-    ];
+    return {
+      beforeFiles: [
+        // 서브도메인 접속 시 해당 툴 페이지로 내부 라우팅
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "code-formatter.toolhub.services" }],
+          destination: "/tools/code-formatter/:path*",
+        },
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "color-picker.toolhub.services" }],
+          destination: "/tools/color-picker/:path*",
+        },
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "calculator.toolhub.services" }],
+          destination: "/tools/calculator/:path*",
+        },
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "pomodoro.toolhub.services" }],
+          destination: "/tools/pomodoro/:path*",
+        },
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "markdown.toolhub.services" }],
+          destination: "/tools/markdown/:path*",
+        },
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "unit-converter.toolhub.services" }],
+          destination: "/tools/unit-converter/:path*",
+        },
+        {
+          source: "/:path*",
+          has: [{ type: "host", value: "random-picker.toolhub.services" }],
+          destination: "/tools/random-picker/:path*",
+        },
+      ],
+    };
   },
   async redirects() {
     return [
