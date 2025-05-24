@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Code,
   Palette,
@@ -38,8 +38,9 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MiniTimerContainer } from "@/components/tools/pomodoro/MiniTimerContainer";
 import { usePomodoroContext } from "@/components/tools/pomodoro/PomodoroContext";
+import { DOMAIN_CONFIG } from "@/lib/constants";
 
-// 도구 카테고리 정의
+// 도구 카테고리 정의 - 중앙화된 도메인 설정 사용
 const toolCategories = [
   {
     id: "time",
@@ -49,7 +50,7 @@ const toolCategories = [
         id: "pomodoro",
         name: "포모도로 타이머",
         icon: <Clock className="h-4 w-4 text-red-500" />,
-        href: "https://pomodoro.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("pomodoro"),
       },
     ],
   },
@@ -61,7 +62,7 @@ const toolCategories = [
         id: "markdown",
         name: "마크다운 에디터",
         icon: <FileText className="h-4 w-4 text-emerald-500" />,
-        href: "https://markdown.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("markdown"),
       },
     ],
   },
@@ -73,31 +74,31 @@ const toolCategories = [
         id: "code-formatter",
         name: "코드 포매터",
         icon: <Code className="h-4 w-4 text-violet-500" />,
-        href: "https://code-formatter.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("code-formatter"),
       },
       {
         id: "color-picker",
         name: "색상 선택기",
         icon: <Palette className="h-4 w-4 text-pink-500" />,
-        href: "https://color-picker.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("color-picker"),
       },
       {
         id: "calculator",
         name: "계산기",
         icon: <Calculator className="h-4 w-4 text-blue-500" />,
-        href: "https://calculator.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("calculator"),
       },
       {
         id: "unit-converter",
         name: "단위 변환기",
         icon: <Zap className="h-4 w-4 text-amber-500" />,
-        href: "https://unit-converter.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("unit-converter"),
       },
       {
         id: "random-picker",
         name: "랜덤 선택기",
         icon: <Shuffle className="h-4 w-4 text-purple-500" />,
-        href: "https://random-picker.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("random-picker"),
       },
     ],
   },
@@ -112,6 +113,7 @@ interface ToolSidebarProps {
 
 export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const detectedMobile = useIsMobile();
   const { timeLeft, globalModeEnabled } = usePomodoroContext();
 
@@ -121,8 +123,14 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
   // 현재 활성화된 도구 ID 찾기
   const getCurrentToolId = () => {
     const currentPath = pathname;
-    const currentTool = allTools.find((tool) => currentPath === tool.href);
+    const currentTool = allTools.find((tool) => currentPath.includes(tool.id));
     return currentTool?.id;
+  };
+
+  // 홈으로 이동하는 함수
+  const navigateToHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = DOMAIN_CONFIG.getMainUrl();
   };
 
   const currentToolId = getCurrentToolId();
@@ -138,10 +146,14 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
       {!isOnMobile && <SidebarRail />}
       <SidebarHeader className="h-14">
         <div className="flex items-center justify-between px-4">
-          <Link href="/" className="flex items-center space-x-2">
+          <a
+            href={DOMAIN_CONFIG.getMainUrl()}
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={navigateToHome}
+          >
             <LayoutGrid className="h-5 w-5" />
             <span className="font-semibold text-lg">ToolHub</span>
-          </Link>
+          </a>
           {/* 히든으로 처리하되 DOM에는 유지해 외부에서 접근 가능하게 함 */}
           <SidebarTrigger data-trigger className="hidden" />
         </div>
@@ -159,10 +171,10 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
                       isActive={currentToolId === tool.id}
                       className={isOnMobile ? "py-3" : ""}
                     >
-                      <Link href={tool.href}>
+                      <a href={tool.href}>
                         {tool.icon}
                         <span>{tool.name}</span>
-                      </Link>
+                      </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

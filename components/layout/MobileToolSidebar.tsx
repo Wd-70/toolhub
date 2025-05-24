@@ -15,8 +15,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { DOMAIN_CONFIG, APP_CONFIG } from "@/lib/constants";
 
-// 도구 카테고리 정의 - ToolSidebar.tsx와 동일한 데이터
+// 도구 카테고리 정의 - 중앙화된 도메인 설정 사용
 const toolCategories = [
   {
     id: "time",
@@ -26,7 +27,7 @@ const toolCategories = [
         id: "pomodoro",
         name: "포모도로 타이머",
         icon: <Clock className="h-5 w-5 text-red-500" />,
-        href: "https://pomodoro.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("pomodoro"),
       },
     ],
   },
@@ -38,7 +39,7 @@ const toolCategories = [
         id: "markdown",
         name: "마크다운 에디터",
         icon: <FileText className="h-5 w-5 text-emerald-500" />,
-        href: "https://markdown.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("markdown"),
       },
     ],
   },
@@ -50,31 +51,31 @@ const toolCategories = [
         id: "code-formatter",
         name: "코드 포매터",
         icon: <Code className="h-5 w-5 text-violet-500" />,
-        href: "https://code-formatter.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("code-formatter"),
       },
       {
         id: "color-picker",
         name: "색상 선택기",
         icon: <Palette className="h-5 w-5 text-pink-500" />,
-        href: "https://color-picker.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("color-picker"),
       },
       {
         id: "calculator",
         name: "계산기",
         icon: <Calculator className="h-5 w-5 text-blue-500" />,
-        href: "https://calculator.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("calculator"),
       },
       {
         id: "unit-converter",
         name: "단위 변환기",
         icon: <Zap className="h-5 w-5 text-amber-500" />,
-        href: "https://unit-converter.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("unit-converter"),
       },
       {
         id: "random-picker",
         name: "랜덤 선택기",
         icon: <Shuffle className="h-5 w-5 text-purple-500" />,
-        href: "https://random-picker.toolhub.services",
+        href: DOMAIN_CONFIG.getToolUrl("random-picker"),
       },
     ],
   },
@@ -89,8 +90,14 @@ export function MobileToolSidebar() {
   // 현재 활성화된 도구 ID 찾기
   const getCurrentToolId = () => {
     const currentPath = pathname;
-    const currentTool = allTools.find((tool) => currentPath === tool.href);
+    const currentTool = allTools.find((tool) => currentPath.includes(tool.id));
     return currentTool?.id;
+  };
+
+  // 홈으로 이동하는 함수
+  const navigateToHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = DOMAIN_CONFIG.getMainUrl();
   };
 
   const currentToolId = getCurrentToolId();
@@ -99,10 +106,14 @@ export function MobileToolSidebar() {
     <div className="flex flex-col h-full pt-4 pb-6 bg-background">
       {/* 헤더 */}
       <div className="px-6 py-2 mb-4">
-        <Link href="/" className="flex items-center space-x-2">
+        <a
+          href={DOMAIN_CONFIG.getMainUrl()}
+          className="flex items-center space-x-2 cursor-pointer"
+          onClick={navigateToHome}
+        >
           <LayoutGrid className="h-6 w-6" />
-          <span className="font-semibold text-xl">ToolHub</span>
-        </Link>
+          <span className="font-semibold text-xl">{APP_CONFIG.APP_NAME}</span>
+        </a>
       </div>
 
       {/* 카테고리 및 도구 목록 */}
@@ -116,7 +127,7 @@ export function MobileToolSidebar() {
               {category.tools.map((tool) => {
                 const isActive = currentToolId === tool.id;
                 return (
-                  <Link
+                  <a
                     key={tool.id}
                     href={tool.href}
                     className={`flex items-center px-3 py-3.5 rounded-md text-sm font-medium ${
@@ -127,7 +138,7 @@ export function MobileToolSidebar() {
                   >
                     <div className="mr-3 shrink-0">{tool.icon}</div>
                     <span>{tool.name}</span>
-                  </Link>
+                  </a>
                 );
               })}
             </div>
@@ -139,7 +150,7 @@ export function MobileToolSidebar() {
       <div className="px-6 mt-auto">
         <Separator className="mb-4" />
         <div className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} ToolHub
+          {APP_CONFIG.COPYRIGHT}
         </div>
       </div>
     </div>
