@@ -5,7 +5,10 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ToolStateProvider } from "@/hooks/use-tool-state";
 import { PomodoroProvider } from "@/components/tools/pomodoro/PomodoroContext";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata = {
   title: "ToolHub - 웹 도구 모음",
@@ -20,6 +23,24 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <meta name="referrer" content="no-referrer" />
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"

@@ -8,6 +8,7 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ["toolhub.services"],
   },
   // 서브도메인에서도 정적 자산을 로드할 수 있도록 assetPrefix 설정
   assetPrefix:
@@ -33,15 +34,25 @@ const nextConfig = {
             key: "Access-Control-Allow-Headers",
             value: "X-Requested-With, Content-Type, Authorization",
           },
-          {
-            key: "Access-Control-Allow-Credentials",
-            value: "true",
-          },
         ],
       },
       {
         // 정적 파일 경로에 대한 특별 설정
         source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        // 웹 폰트에 대한 특별 설정
+        source: "/_next/static/media/:path*",
         headers: [
           {
             key: "Access-Control-Allow-Origin",
@@ -98,7 +109,7 @@ const nextConfig = {
       ],
     };
   },
-  // 리디렉션 설정 (이미 적용되어 잘 작동 중)
+  // 리디렉션 설정 개선
   async redirects() {
     return [
       // 도구 하위 경로로 직접 접근 시 해당 서브도메인으로 리디렉션
