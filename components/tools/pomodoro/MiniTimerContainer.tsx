@@ -5,6 +5,7 @@ import { usePomodoroContext } from "./PomodoroContext";
 import { Button } from "@/components/ui/button";
 import { Play, Pause } from "lucide-react";
 import Link from "next/link";
+import { DOMAIN_CONFIG } from "@/lib/constants";
 
 export function MiniTimerContainer() {
   const {
@@ -39,8 +40,11 @@ export function MiniTimerContainer() {
     longBreak: "긴 휴식 중",
   };
 
+  // 포모도로 서브도메인 URL
+  const pomodoroUrl = DOMAIN_CONFIG.getToolUrl("pomodoro");
+
   return (
-    <Link href="/tools/pomodoro" className="block">
+    <Link href={pomodoroUrl} className="block">
       <div
         className={`p-3 rounded-lg ${modeBackgrounds[mode]} transition-colors duration-300`}
       >
