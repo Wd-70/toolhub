@@ -47,7 +47,6 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     longBreakDuration: settings.longBreakDuration,
     workSessionsBeforeLongBreak: settings.workSessionsBeforeLongBreak,
     autoStartNextSession: settings.autoStartNextSession,
-    globalModeEnabled: settings.globalModeEnabled,
     isTestMode: testMode && ENABLE_TEST_MODE_UI, // 개발 모드가 아니면 테스트 모드도 비활성화
     onSessionComplete: (mode, duration) => {
       // 세션 완료 시 알림 발송

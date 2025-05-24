@@ -10,7 +10,6 @@ interface UseSessionProps {
   longBreakDuration: number;
   workSessionsBeforeLongBreak: number;
   autoStartNextSession?: boolean;
-  globalModeEnabled?: boolean;
   isTestMode?: boolean;
   onSessionComplete?: (mode: TimerMode, duration: number) => void;
 }
@@ -21,7 +20,6 @@ export function useSession({
   longBreakDuration,
   workSessionsBeforeLongBreak,
   autoStartNextSession = true,
-  globalModeEnabled = true,
   isTestMode = false,
   onSessionComplete,
 }: UseSessionProps) {
@@ -125,7 +123,6 @@ export function useSession({
   // useTimer 훅 사용
   const timer = useTimer({
     initialDuration: getCurrentDuration(),
-    globalModeEnabled,
     isTestMode,
     onTimerComplete: handleTimerComplete,
   });

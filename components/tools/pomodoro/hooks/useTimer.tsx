@@ -10,14 +10,12 @@ import { usePageVisibility } from "./usePageVisibility";
 interface UseTimerProps {
   // 타이머 초기 설정
   initialDuration: number;
-  globalModeEnabled?: boolean;
   isTestMode?: boolean;
   onTimerComplete?: () => void;
 }
 
 export function useTimer({
   initialDuration,
-  globalModeEnabled = true,
   isTestMode = false,
   onTimerComplete,
 }: UseTimerProps) {
@@ -38,19 +36,6 @@ export function useTimer({
       setTimeLeft(initialDuration);
     }
   }, [initialDuration]);
-
-  // 현재 페이지가 포모도로 페이지인지 업데이트
-  useEffect(() => {
-    // 이전 상태 업데이트
-    const previousIsPomodoro = isPomodoroRef.current;
-    isPomodoroRef.current = isPomodoro;
-
-    // 전역 모드가 아니고, 포모도로 페이지에서 벗어났고, 타이머가 활성화된 경우 -> 타이머 멈춤
-    if (!globalModeEnabled && previousIsPomodoro && !isPomodoro && isActive) {
-      console.log("페이지 전환으로 타이머 정지");
-      pauseTimer();
-    }
-  }, [isPomodoro, globalModeEnabled, isActive]);
 
   // 타이머 중지 함수
   const stopTimer = useCallback(() => {
@@ -73,16 +58,27 @@ export function useTimer({
     }
   }, [isActive, timeLeft, stopTimer]);
 
+  // 현재 페이지가 포모도로 페이지인지 업데이트
+  useEffect(() => {
+    // 이전 상태 업데이트
+    const previousIsPomodoro = isPomodoroRef.current;
+    isPomodoroRef.current = isPomodoro;
+
+    // 포모도로 페이지에서 벗어났고, 타이머가 활성화된 경우 -> 타이머 멈춤
+    if (previousIsPomodoro && !isPomodoro && isActive) {
+      console.log("페이지 전환으로 타이머 정지");
+      pauseTimer();
+    }
+  }, [isPomodoro, isActive, pauseTimer]);
+
   // 타이머 시작 함수
   const startTimer = useCallback(() => {
     // 이미 타이머가 활성화되었으면 아무것도 하지 않음
     if (isActive) return;
 
-    // 전역 모드가 아니고 포모도로 페이지가 아니면 타이머 시작하지 않음
-    if (!globalModeEnabled && !isPomodoroRef.current) {
-      console.log(
-        "전역 모드가 아니고 포모도로 페이지가 아니어서 타이머 시작하지 않음"
-      );
+    // 포모도로 페이지에서는 항상 타이머 시작 가능
+    if (!isPomodoroRef.current) {
+      console.log("포모도로 페이지가 아니어서 타이머를 시작하지 않습니다");
       return;
     }
 
@@ -90,7 +86,7 @@ export function useTimer({
 
     // 현재 timeLeft 값을 그대로 사용 - 일시정지 상태에서 재개할 때 유용
     setIsActive(true);
-  }, [isActive, globalModeEnabled, timeLeft]);
+  }, [isActive, timeLeft]);
 
   // 타이머 토글 함수
   const toggleTimer = useCallback(() => {
@@ -114,11 +110,9 @@ export function useTimer({
   // 타이머 실행 효과
   useEffect(() => {
     if (isActive) {
-      // 전역 모드가 아니고 포모도로 페이지가 아니면 타이머 시작하지 않음
-      if (!globalModeEnabled && !isPomodoroRef.current) {
-        console.log(
-          "전역 모드가 아니고 포모도로 페이지가 아니어서 타이머 활성화 취소"
-        );
+      // 포모도로 페이지가 아니면 타이머 시작하지 않음
+      if (!isPomodoroRef.current) {
+        console.log("포모도로 페이지가 아니어서 타이머 활성화 취소");
         setIsActive(false);
         return;
       }
@@ -159,7 +153,7 @@ export function useTimer({
         }
       };
     }
-  }, [isActive, globalModeEnabled, stopTimer, onTimerComplete, isTestMode]);
+  }, [isActive, isTestMode, stopTimer, onTimerComplete]);
 
   // 기타 유틸리티 함수
   const formatTime = useCallback((seconds: number): string => {
