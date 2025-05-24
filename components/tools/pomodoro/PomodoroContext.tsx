@@ -155,6 +155,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
     // 알림 관련 함수
     requestNotificationPermission: notifications.requestNotificationPermission,
     openBrowserSettings: notifications.openBrowserSettings,
+    playSound: notifications.playSound,
 
     // 이벤트 핸들러
     handleWorkDurationChange: (e) => {

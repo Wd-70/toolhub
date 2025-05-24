@@ -60,6 +60,7 @@ export interface TimerActions {
   setGlobalModeEnabled: (enabled: boolean) => void;
   requestNotificationPermission: () => void;
   openBrowserSettings: () => void;
+  playSound: () => void;
 }
 
 export interface TimerHandlers {

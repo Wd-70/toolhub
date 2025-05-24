@@ -49,6 +49,7 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
     setWorkSessionsBeforeLongBreak,
     globalModeEnabled,
     setGlobalModeEnabled,
+    playSound,
   } = usePomodoroContext();
 
   // 기본값 복원 핸들러
@@ -172,7 +173,7 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
               variant="outline"
               size="sm"
               className="h-7 text-xs"
-              // 실제 기능 제거됨
+              onClick={playSound}
             >
               테스트
             </Button>
