@@ -9,9 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  async redirects() {
+  async rewrites() {
     return [
-      // 서브도메인에 접속시 해당 툴 페이지로 리디렉션
+      // 코드 포매터 서브도메인 - 루트 경로만 처리
       {
         source: "/",
         has: [
@@ -21,8 +21,8 @@ const nextConfig = {
           },
         ],
         destination: "/tools/code-formatter",
-        permanent: false,
       },
+      // 색상 피커 서브도메인 - 루트 경로만 처리
       {
         source: "/",
         has: [
@@ -32,8 +32,8 @@ const nextConfig = {
           },
         ],
         destination: "/tools/color-picker",
-        permanent: false,
       },
+      // 계산기 서브도메인 - 루트 경로만 처리
       {
         source: "/",
         has: [
@@ -43,8 +43,8 @@ const nextConfig = {
           },
         ],
         destination: "/tools/calculator",
-        permanent: false,
       },
+      // 포모도로 타이머 서브도메인 - 루트 경로만 처리
       {
         source: "/",
         has: [
@@ -54,8 +54,8 @@ const nextConfig = {
           },
         ],
         destination: "/tools/pomodoro",
-        permanent: false,
       },
+      // 마크다운 에디터 서브도메인 - 루트 경로만 처리
       {
         source: "/",
         has: [
@@ -65,19 +65,19 @@ const nextConfig = {
           },
         ],
         destination: "/tools/markdown",
-        permanent: false,
       },
+      // 단위 변환기 서브도메인 - 루트 경로만 처리
       {
         source: "/",
         has: [
           {
             type: "host",
-            value: "converter.toolhub.services",
+            value: "unit-converter.toolhub.services",
           },
         ],
-        destination: "/tools/converter",
-        permanent: false,
+        destination: "/tools/unit-converter",
       },
+      // 랜덤 선택기 서브도메인 - 루트 경로만 처리
       {
         source: "/",
         has: [
@@ -87,13 +87,9 @@ const nextConfig = {
           },
         ],
         destination: "/tools/random-picker",
-        permanent: false,
       },
-    ];
-  },
-  async rewrites() {
-    return [
-      // 코드 포매터 서브도메인
+
+      // 서브도메인의 하위 경로 처리
       {
         source: "/:path*",
         has: [
@@ -104,7 +100,6 @@ const nextConfig = {
         ],
         destination: "/tools/code-formatter/:path*",
       },
-      // 색상 피커 서브도메인
       {
         source: "/:path*",
         has: [
@@ -115,7 +110,6 @@ const nextConfig = {
         ],
         destination: "/tools/color-picker/:path*",
       },
-      // 계산기 서브도메인
       {
         source: "/:path*",
         has: [
@@ -126,7 +120,6 @@ const nextConfig = {
         ],
         destination: "/tools/calculator/:path*",
       },
-      // 포모도로 타이머 서브도메인
       {
         source: "/:path*",
         has: [
@@ -137,7 +130,6 @@ const nextConfig = {
         ],
         destination: "/tools/pomodoro/:path*",
       },
-      // 마크다운 에디터 서브도메인
       {
         source: "/:path*",
         has: [
@@ -148,18 +140,16 @@ const nextConfig = {
         ],
         destination: "/tools/markdown/:path*",
       },
-      // 단위 변환기 서브도메인
       {
         source: "/:path*",
         has: [
           {
             type: "host",
-            value: "converter.toolhub.services",
+            value: "unit-converter.toolhub.services",
           },
         ],
-        destination: "/tools/converter/:path*",
+        destination: "/tools/unit-converter/:path*",
       },
-      // 랜덤 선택기 서브도메인
       {
         source: "/:path*",
         has: [
@@ -169,6 +159,59 @@ const nextConfig = {
           },
         ],
         destination: "/tools/random-picker/:path*",
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      // 도구 하위 경로로 직접 접근 시 해당 서브도메인으로 리디렉션
+      {
+        source: "/tools/code-formatter",
+        destination: "https://code-formatter.toolhub.services",
+        permanent: false,
+      },
+      {
+        source: "/tools/color-picker",
+        destination: "https://color-picker.toolhub.services",
+        permanent: false,
+      },
+      {
+        source: "/tools/calculator",
+        destination: "https://calculator.toolhub.services",
+        permanent: false,
+      },
+      {
+        source: "/tools/pomodoro",
+        destination: "https://pomodoro.toolhub.services",
+        permanent: false,
+      },
+      {
+        source: "/tools/markdown",
+        destination: "https://markdown.toolhub.services",
+        permanent: false,
+      },
+      {
+        source: "/tools/unit-converter",
+        destination: "https://unit-converter.toolhub.services",
+        permanent: false,
+      },
+      {
+        source: "/tools/random-picker",
+        destination: "https://random-picker.toolhub.services",
+        permanent: false,
+      },
+
+      // 서브도메인 내에서 /tools 경로로 접근 시 루트로 리디렉션하여 이중 경로 방지
+      {
+        source: "/tools/:toolId",
+        has: [
+          {
+            type: "host",
+            value: ":subdomain.toolhub.services",
+          },
+        ],
+        destination: "https://:subdomain.toolhub.services",
+        permanent: false,
       },
     ];
   },

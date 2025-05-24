@@ -88,10 +88,10 @@ const toolCategories = [
         href: "https://calculator.toolhub.services",
       },
       {
-        id: "converter",
+        id: "unit-converter",
         name: "단위 변환기",
         icon: <Zap className="h-4 w-4 text-amber-500" />,
-        href: "https://converter.toolhub.services",
+        href: "https://unit-converter.toolhub.services",
       },
       {
         id: "random-picker",
