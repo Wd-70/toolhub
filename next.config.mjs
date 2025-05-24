@@ -14,6 +14,47 @@ const nextConfig = {
     process.env.NODE_ENV === "production"
       ? "https://toolhub.services"
       : undefined,
+  // CORS 설정을 위한 헤더 추가
+  async headers() {
+    return [
+      {
+        // 모든 경로에 적용
+        source: "/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*.toolhub.services",
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, DELETE, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "X-Requested-With, Content-Type, Authorization",
+          },
+          {
+            key: "Access-Control-Allow-Credentials",
+            value: "true",
+          },
+        ],
+      },
+      {
+        // 정적 파일 경로에 대한 특별 설정
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
   // rewrites와 redirects를 더 간결하게 정리
   async rewrites() {
     return {
