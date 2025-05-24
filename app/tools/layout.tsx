@@ -38,7 +38,8 @@ export default function ToolsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isOpen, setIsOpen] = useState(true);
+  // 기본 상태를 닫힌 상태(false)로 변경
+  const [isOpen, setIsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // sidebarRef를 통해 UI 라이브러리의 사이드바에 접근할 수 있게 합니다
