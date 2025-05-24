@@ -72,7 +72,7 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "converter.toolhub.services",
+            value: "unit-converter.toolhub.services",
           },
         ],
         destination: "/tools/converter/:path*",
