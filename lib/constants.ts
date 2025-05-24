@@ -17,7 +17,7 @@ export const DOMAIN_CONFIG = {
 
   // 툴별 서브도메인 URL 생성
   getToolUrl: function (toolId: string) {
-    return `${this.PROTOCOL}://${toolId}.${this.MAIN_DOMAIN}`;
+    return `/tools/${toolId}`;
   },
 
   // 정적 자산 URL 생성
@@ -61,4 +61,31 @@ export const APP_CONFIG = {
   APP_NAME: "ToolHub",
   APP_DESCRIPTION: "다양한 웹 도구를 한 곳에서 편리하게 사용하세요.",
   COPYRIGHT: `© ${new Date().getFullYear()} ToolHub`,
+};
+
+// 사이드바 관련 설정 상수
+export const SIDEBAR_WIDTH_OPTIONS = {
+  small: "10rem",
+  medium: "12rem",
+  large: "16rem",
+  extraLarge: "20rem",
+};
+
+// 사이드바 너비 설정 함수 - localStorage에 저장하여 새로고침해도 유지
+export const setSidebarWidth = (width: string) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("sidebar-width", width);
+
+    // 실시간으로 CSS 변수 업데이트
+    document.documentElement.style.setProperty("--sidebar-width", width);
+    document.documentElement.style.setProperty("--sidebar-width-mobile", width);
+  }
+};
+
+// 사이드바 너비 가져오는 함수 - localStorage에서 읽어오거나 기본값 반환
+export const getSidebarWidth = (): string => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("sidebar-width") || "12rem";
+  }
+  return "12rem";
 };

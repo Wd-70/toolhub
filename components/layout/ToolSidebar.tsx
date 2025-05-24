@@ -32,6 +32,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarSettings,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -132,11 +133,13 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
 
   const currentToolId = getCurrentToolId();
 
-  // 모바일에서는 사이드바 너비를 최대화하고, 그렇지 않으면 SIDEBAR_WIDTH 변수 사용
-  const sidebarStyle = isOnMobile ? { width: "100%" } : {}; // SIDEBAR_WIDTH CSS 변수가 자동으로 적용됨
+  // 모바일에서는 사이드바 너비를 최대화하고, 그렇지 않으면 CSS 변수를 통해 너비를 제어
+  const sidebarStyle = isOnMobile
+    ? { width: "100%" }
+    : { width: "var(--sidebar-width)" };
 
   return (
-    <Sidebar className={isOnMobile ? "w-full" : ""} style={sidebarStyle}>
+    <Sidebar style={sidebarStyle}>
       {!isOnMobile && <SidebarRail />}
       <SidebarHeader className="h-14">
         <div className="flex items-center justify-between px-4">
@@ -180,6 +183,7 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
       <SidebarFooter className="p-4">
         <div className="space-y-2">
           <Separator />
+          <SidebarSettings />
         </div>
       </SidebarFooter>
     </Sidebar>

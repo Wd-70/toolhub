@@ -18,6 +18,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  SIDEBAR_WIDTH_OPTIONS,
+  setSidebarWidth,
+  getSidebarWidth,
+} from "@/lib/constants";
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -136,6 +141,7 @@ const SidebarProvider = React.forwardRef<
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH,
+                "--sidebar-width-mobile": SIDEBAR_WIDTH_MOBILE,
                 "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
                 ...style,
               } as React.CSSProperties
@@ -182,7 +188,7 @@ const Sidebar = React.forwardRef<
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+            "flex h-full flex-col bg-sidebar text-sidebar-foreground",
             className
           )}
           style={{
@@ -202,10 +208,10 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                width: "var(--sidebar-width-mobile)",
               } as React.CSSProperties
             }
             side={side}
@@ -228,7 +234,7 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear p-0",
+            "duration-200 relative h-svh bg-transparent transition-[width] ease-linear p-0",
             "group-data-[collapsible=offcanvas]:w-0",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
@@ -241,7 +247,7 @@ const Sidebar = React.forwardRef<
         />
         <div
           className={cn(
-            "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
+            "duration-200 fixed inset-y-0 z-10 hidden h-svh transition-[left,right,width] ease-linear md:flex",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -258,7 +264,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+            className="flex h-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
             style={{
               width: "var(--sidebar-width)",
             }}
@@ -372,6 +378,7 @@ const SidebarHeader = React.forwardRef<
       ref={ref}
       data-sidebar="header"
       className={cn("flex flex-col gap-2 p-2 w-full", className)}
+      style={{ width: "100%" }}
       {...props}
     />
   );
@@ -387,6 +394,7 @@ const SidebarFooter = React.forwardRef<
       ref={ref}
       data-sidebar="footer"
       className={cn("flex flex-col gap-2 p-2 w-full", className)}
+      style={{ width: "100%" }}
       {...props}
     />
   );
@@ -420,6 +428,7 @@ const SidebarContent = React.forwardRef<
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto w-full group-data-[collapsible=icon]:overflow-hidden",
         className
       )}
+      style={{ width: "100%" }}
       {...props}
     />
   );
@@ -435,9 +444,7 @@ const SidebarGroup = React.forwardRef<
       ref={ref}
       data-sidebar="group"
       className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
-      style={{
-        width: "var(--sidebar-width)",
-      }}
+      style={{ width: "100%" }}
       {...props}
     />
   );
@@ -751,6 +758,60 @@ const SidebarMenuSubButton = React.forwardRef<
 });
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton";
 
+const SidebarSettings = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
+  const [width, setWidth] = React.useState<string>(() => {
+    // 클라이언트 사이드에서만 로컬 스토리지에서 가져오기
+    if (typeof window !== "undefined") {
+      return getSidebarWidth();
+    }
+    return SIDEBAR_WIDTH;
+  });
+
+  // 컴포넌트 마운트 시 사이드바 너비 초기화
+  React.useEffect(() => {
+    const savedWidth = getSidebarWidth();
+    setWidth(savedWidth);
+    setSidebarWidth(savedWidth);
+  }, []);
+
+  // 너비 변경 핸들러
+  const handleWidthChange = (newWidth: string) => {
+    setWidth(newWidth);
+    setSidebarWidth(newWidth);
+  };
+
+  return (
+    <div
+      ref={ref}
+      data-sidebar="settings"
+      className={cn("p-2 space-y-2", className)}
+      {...props}
+    >
+      <div className="text-xs font-medium">사이드바 너비 조정</div>
+      <div className="flex flex-wrap gap-2">
+        {Object.entries(SIDEBAR_WIDTH_OPTIONS).map(([size, value]) => (
+          <Button
+            key={size}
+            variant={width === value ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleWidthChange(value)}
+            className="text-xs"
+          >
+            {size === "small" && "작게"}
+            {size === "medium" && "중간"}
+            {size === "large" && "크게"}
+            {size === "extraLarge" && "매우 크게"}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+});
+SidebarSettings.displayName = "SidebarSettings";
+
 export {
   Sidebar,
   SidebarContent,
@@ -774,6 +835,7 @@ export {
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
+  SidebarSettings,
   SidebarTrigger,
   useSidebar,
 };
