@@ -17,7 +17,7 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "code-formatter.yourdomain.com",
+            value: "code-formatter.toolhub.services",
           },
         ],
         destination: "/tools/code-formatter/:path*",
@@ -28,7 +28,7 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "color-picker.yourdomain.com",
+            value: "color-picker.toolhub.services",
           },
         ],
         destination: "/tools/color-picker/:path*",
@@ -39,7 +39,7 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "calculator.yourdomain.com",
+            value: "calculator.toolhub.services",
           },
         ],
         destination: "/tools/calculator/:path*",
@@ -50,7 +50,7 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "pomodoro.yourdomain.com",
+            value: "pomodoro.toolhub.services",
           },
         ],
         destination: "/tools/pomodoro/:path*",
@@ -61,7 +61,7 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "markdown.yourdomain.com",
+            value: "markdown.toolhub.services",
           },
         ],
         destination: "/tools/markdown/:path*",
@@ -72,7 +72,7 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "converter.yourdomain.com",
+            value: "converter.toolhub.services",
           },
         ],
         destination: "/tools/converter/:path*",
@@ -83,7 +83,7 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "random-picker.yourdomain.com",
+            value: "random-picker.toolhub.services",
           },
         ],
         destination: "/tools/random-picker/:path*",
