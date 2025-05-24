@@ -50,6 +50,23 @@ type ItemType = {
 // 디버그 모드 전역 설정 추가 (코드레벨에서 수정 가능)
 const DEBUG_MODE_ENABLED = false; // 배포용으로는 false, 개발 중 디버깅이 필요하면 true로 설정
 
+// 폴백(fallback) 이미지 URL 상수 추가
+const FALLBACK_IMAGE_URL =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuyekOujjOyKpO2KuDwvdGV4dD48L3N2Zz4=";
+
+// 기본 경로 우선순위
+const IMAGE_PATH_FORMATS = [
+  "./numbers/%num%.png",
+  "/numbers/%num%.png",
+  "../public/numbers/%num%.png",
+  "numbers/%num%.png",
+];
+
+// 이미지 URL 생성 함수
+const getNumberImageUrl = (num: number): string => {
+  return IMAGE_PATH_FORMATS[0].replace("%num%", num.toString());
+};
+
 // 이미지 업로드 컴포넌트
 function ImageUploader({
   onImageSelect,
@@ -183,61 +200,61 @@ export default function RandomPicker() {
   const [items, setItems] = useState<ItemType[]>([
     {
       id: "1",
-      content: "/numbers/0.png",
+      content: getNumberImageUrl(0),
       type: "image",
       displayName: "숫자 0",
     },
     {
       id: "2",
-      content: "/numbers/1.png",
+      content: getNumberImageUrl(1),
       type: "image",
       displayName: "숫자 1",
     },
     {
       id: "3",
-      content: "/numbers/2.png",
+      content: getNumberImageUrl(2),
       type: "image",
       displayName: "숫자 2",
     },
     {
       id: "4",
-      content: "/numbers/3.png",
+      content: getNumberImageUrl(3),
       type: "image",
       displayName: "숫자 3",
     },
     {
       id: "5",
-      content: "/numbers/4.png",
+      content: getNumberImageUrl(4),
       type: "image",
       displayName: "숫자 4",
     },
     {
       id: "6",
-      content: "/numbers/5.png",
+      content: getNumberImageUrl(5),
       type: "image",
       displayName: "숫자 5",
     },
     {
       id: "7",
-      content: "/numbers/6.png",
+      content: getNumberImageUrl(6),
       type: "image",
       displayName: "숫자 6",
     },
     {
       id: "8",
-      content: "/numbers/7.png",
+      content: getNumberImageUrl(7),
       type: "image",
       displayName: "숫자 7",
     },
     {
       id: "9",
-      content: "/numbers/8.png",
+      content: getNumberImageUrl(8),
       type: "image",
       displayName: "숫자 8",
     },
     {
       id: "10",
-      content: "/numbers/9.png",
+      content: getNumberImageUrl(9),
       type: "image",
       displayName: "숫자 9",
     },
@@ -979,6 +996,47 @@ export default function RandomPicker() {
     }
   }, [isMobile]);
 
+  // 이미지 오류 처리 함수
+  const handleImageError = (
+    e: React.SyntheticEvent<HTMLImageElement, Event>
+  ) => {
+    const img = e.currentTarget;
+    const originalSrc = img.src;
+
+    // 숫자 이미지에 대한 에러인 경우
+    if (originalSrc.includes("numbers")) {
+      // 숫자 추출 시도
+      const numMatch = originalSrc.match(/(\d+)\.png/);
+      if (numMatch && numMatch[1]) {
+        const num = numMatch[1];
+
+        // 다른 경로 형식 시도
+        let foundValidPath = false;
+        for (const pathFormat of IMAGE_PATH_FORMATS) {
+          if (originalSrc.includes(pathFormat.replace("%num%", num))) {
+            continue; // 이미 실패한 경로는 건너뜀
+          }
+
+          const newSrc = pathFormat.replace("%num%", num);
+          addDebugLog(`경로 수정 시도: ${originalSrc} -> ${newSrc}`);
+
+          img.src = newSrc;
+          foundValidPath = true;
+          break;
+        }
+
+        if (foundValidPath) {
+          return;
+        }
+      }
+    }
+
+    // 모든 경로가 실패하면 폴백 이미지 사용
+    addDebugLog(`이미지 로딩 오류: ${originalSrc}, 폴백 이미지 사용`);
+    img.src = FALLBACK_IMAGE_URL;
+    img.onerror = null; // 무한 오류 방지
+  };
+
   return (
     <div className="space-y-8">
       <div className="max-w-3xl mx-auto text-center space-y-2">
@@ -1076,10 +1134,7 @@ export default function RandomPicker() {
                                       src={item.content || "/placeholder.svg"}
                                       alt="Item"
                                       className="max-w-full max-h-full object-contain"
-                                      onError={(e) => {
-                                        (e.target as HTMLImageElement).src =
-                                          "/placeholder.svg?height=100&width=100";
-                                      }}
+                                      onError={handleImageError}
                                     />
                                   )}
                                 </div>
@@ -1111,10 +1166,7 @@ export default function RandomPicker() {
                                 src={selectedItem.content || "/placeholder.svg"}
                                 alt="Selected item"
                                 className="h-20 object-contain"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src =
-                                    "/placeholder.svg?height=80&width=80";
-                                }}
+                                onError={handleImageError}
                               />
                               <span className="text-sm">
                                 {selectedItem.displayName || "이미지"}
@@ -1323,6 +1375,7 @@ export default function RandomPicker() {
                                     src={imagePreview}
                                     alt="미리보기"
                                     className="max-w-full max-h-full object-contain"
+                                    onError={handleImageError}
                                   />
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -1424,10 +1477,7 @@ export default function RandomPicker() {
                                       src={item.content || "/placeholder.svg"}
                                       alt="Item"
                                       className="max-w-full max-h-full object-contain"
-                                      onError={(e) => {
-                                        (e.target as HTMLImageElement).src =
-                                          "/placeholder.svg?height=32&width=32";
-                                      }}
+                                      onError={handleImageError}
                                     />
                                   </div>
                                 ) : (
@@ -1491,10 +1541,7 @@ export default function RandomPicker() {
                                       }
                                       alt="Selected item"
                                       className="max-w-full max-h-full object-contain"
-                                      onError={(e) => {
-                                        (e.target as HTMLImageElement).src =
-                                          "/placeholder.svg?height=32&width=32";
-                                      }}
+                                      onError={handleImageError}
                                     />
                                   </div>
                                 ) : (
@@ -1528,7 +1575,7 @@ export default function RandomPicker() {
                     ? "룰렛을 돌려면 최소 2개 이상의 항목이 필요합니다."
                     : `${items.length}개의 항목 중에서 랜덤하게 선택합니다.`}
                 </p>
-                {items.some((item) => item.content.includes("/numbers/")) && (
+                {items.some((item) => item.content.includes("numbers")) && (
                   <div className="flex items-center justify-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-2">
                     <Copyright className="h-3 w-3" />
                     <a
@@ -1661,9 +1708,10 @@ export default function RandomPicker() {
               {[0, 1, 2].map((num) => (
                 <img
                   key={num}
-                  src={`/numbers/${num}.png`}
+                  src={getNumberImageUrl(num)}
                   alt={`숫자 ${num}`}
                   className="w-8 h-8 object-contain"
+                  onError={handleImageError}
                 />
               ))}
               <span className="text-purple-500">...</span>
