@@ -23,6 +23,7 @@ import {
   Info,
   HelpCircle,
   Lightbulb,
+  Copyright,
 } from "lucide-react";
 import {
   Accordion,
@@ -180,10 +181,66 @@ function ImageUploader({
 
 export default function RandomPicker() {
   const [items, setItems] = useState<ItemType[]>([
-    { id: "1", content: "옵션 1", type: "text" },
-    { id: "2", content: "옵션 2", type: "text" },
-    { id: "3", content: "옵션 3", type: "text" },
-    { id: "4", content: "옵션 4", type: "text" },
+    {
+      id: "1",
+      content: "/numbers/0.png",
+      type: "image",
+      displayName: "숫자 0",
+    },
+    {
+      id: "2",
+      content: "/numbers/1.png",
+      type: "image",
+      displayName: "숫자 1",
+    },
+    {
+      id: "3",
+      content: "/numbers/2.png",
+      type: "image",
+      displayName: "숫자 2",
+    },
+    {
+      id: "4",
+      content: "/numbers/3.png",
+      type: "image",
+      displayName: "숫자 3",
+    },
+    {
+      id: "5",
+      content: "/numbers/4.png",
+      type: "image",
+      displayName: "숫자 4",
+    },
+    {
+      id: "6",
+      content: "/numbers/5.png",
+      type: "image",
+      displayName: "숫자 5",
+    },
+    {
+      id: "7",
+      content: "/numbers/6.png",
+      type: "image",
+      displayName: "숫자 6",
+    },
+    {
+      id: "8",
+      content: "/numbers/7.png",
+      type: "image",
+      displayName: "숫자 7",
+    },
+    {
+      id: "9",
+      content: "/numbers/8.png",
+      type: "image",
+      displayName: "숫자 8",
+    },
+    {
+      id: "10",
+      content: "/numbers/9.png",
+      type: "image",
+      displayName: "숫자 9",
+    },
   ]);
 
   const [newItemContent, setNewItemContent] = useState<string>("");
@@ -1465,10 +1522,25 @@ export default function RandomPicker() {
               </Tabs>
             </CardContent>
             <CardFooter className="bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 p-6">
-              <div className="w-full text-center text-sm text-gray-500 dark:text-gray-400">
-                {items.length < 2
-                  ? "룰렛을 돌려면 최소 2개 이상의 항목이 필요합니다."
-                  : `${items.length}개의 항목 중에서 랜덤하게 선택합니다.`}
+              <div className="w-full text-center">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  {items.length < 2
+                    ? "룰렛을 돌려면 최소 2개 이상의 항목이 필요합니다."
+                    : `${items.length}개의 항목 중에서 랜덤하게 선택합니다.`}
+                </p>
+                {items.some((item) => item.content.includes("/numbers/")) && (
+                  <div className="flex items-center justify-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    <Copyright className="h-3 w-3" />
+                    <a
+                      href="http://www.freepik.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-purple-500 transition-colors"
+                    >
+                      Designed by Freepik
+                    </a>
+                  </div>
+                )}
               </div>
             </CardFooter>
 
@@ -1571,6 +1643,31 @@ export default function RandomPicker() {
               <li>룰렛이 회전한 후 랜덤하게 선택된 항목이 표시됩니다.</li>
               <li>History 탭에서 이전 선택 결과를 확인할 수 있습니다.</li>
             </ol>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 p-5 rounded-lg border border-purple-100 dark:border-purple-900 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                <ImageIcon className="h-4 w-4 text-purple-600 dark:text-purple-300" />
+              </div>
+              <h3 className="font-medium">숫자 이미지 컬렉션</h3>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              기본 항목으로 제공되는 숫자 이미지(0-9)는 Freepik에서 제공하는
+              디자인을 사용하였습니다. 원하는 이미지로 교체하거나 항목을 추가할
+              수 있습니다.
+            </p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {[0, 1, 2].map((num) => (
+                <img
+                  key={num}
+                  src={`/numbers/${num}.png`}
+                  alt={`숫자 ${num}`}
+                  className="w-8 h-8 object-contain"
+                />
+              ))}
+              <span className="text-purple-500">...</span>
+            </div>
           </div>
 
           <Accordion
