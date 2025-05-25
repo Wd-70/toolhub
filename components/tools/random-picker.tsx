@@ -1757,19 +1757,6 @@ export default function RandomPicker() {
                     ? "룰렛을 돌려면 최소 2개 이상의 항목이 필요합니다."
                     : `${items.length}개의 항목 중에서 랜덤하게 선택합니다.`}
                 </p>
-                {items.some((item) => item.content.includes("numbers")) && (
-                  <div className="flex items-center justify-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-2">
-                    <Copyright className="h-3 w-3" />
-                    <a
-                      href="http://www.freepik.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-purple-500 transition-colors"
-                    >
-                      Designed by Freepik
-                    </a>
-                  </div>
-                )}
               </div>
             </CardFooter>
 
@@ -1867,9 +1854,10 @@ export default function RandomPicker() {
             </div>
             <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li>Items 탭에서 선택할 항목들을 추가하세요.</li>
-              <li>텍스트나 이미지 URL을 입력할 수 있습니다.</li>
-              <li>Roulette 탭으로 이동하여 '룰렛 돌려기' 버튼을 클릭하세요.</li>
+              <li>텍스트를 입력하거나 이미지 파일을 업로드할 수 있습니다.</li>
+              <li>Roulette 탭으로 이동하여 '룰렛 돌리기' 버튼을 클릭하세요.</li>
               <li>룰렛이 회전한 후 랜덤하게 선택된 항목이 표시됩니다.</li>
+              <li>선택된 항목을 클릭하면 전체화면으로 볼 수 있습니다.</li>
               <li>History 탭에서 이전 선택 결과를 확인할 수 있습니다.</li>
             </ol>
           </div>
@@ -1898,6 +1886,17 @@ export default function RandomPicker() {
               ))}
               <span className="text-purple-500">...</span>
             </div>
+            <div className="flex items-center justify-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-3">
+              <Copyright className="h-3 w-3" />
+              <a
+                href="http://www.freepik.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-purple-500 transition-colors"
+              >
+                Designed by Freepik
+              </a>
+            </div>
           </div>
 
           <Accordion
@@ -1918,8 +1917,8 @@ export default function RandomPicker() {
                     이미지는 어떻게 추가하나요?
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Items 탭에서 이미지 아이콘을 클릭한 후 이미지 URL을
-                    입력하세요.
+                    Items 탭에서 이미지 아이콘을 클릭한 후 기기에 있는 이미지
+                    파일을 선택하세요.
                   </p>
                 </div>
                 <div>
@@ -1927,8 +1926,18 @@ export default function RandomPicker() {
                     여러 항목을 한 번에 추가할 수 있나요?
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    네, Items 탭의 '여러 항목 한 번에 추가' 영역에 줄바꿈으로
-                    구분하여 입력하세요.
+                    네, 텍스트의 경우 Items 탭의 '여러 항목 한 번에 추가' 영역에
+                    줄바꿈으로 구분하여 입력하세요. 이미지는 여러 개를 한 번에
+                    선택할 수 있습니다.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm mb-1">
+                    선택된 항목을 더 크게 볼 수 있나요?
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    네, 선택된 항목을 클릭하면 전체화면으로 볼 수 있습니다.
+                    전체화면에서 아무 곳이나 클릭하면 닫힙니다.
                   </p>
                 </div>
                 <div>
