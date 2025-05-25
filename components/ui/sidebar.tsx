@@ -187,7 +187,7 @@ const Sidebar = React.forwardRef<
             className
           )}
           style={{
-            width: SIDEBAR_WIDTH,
+            width: "var(--sidebar-width)",
           }}
           ref={ref}
           {...props}
@@ -206,7 +206,7 @@ const Sidebar = React.forwardRef<
             className="bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
-                width: SIDEBAR_WIDTH_MOBILE,
+                width: "var(--sidebar-width-mobile)",
               } as React.CSSProperties
             }
             side={side}
@@ -237,7 +237,7 @@ const Sidebar = React.forwardRef<
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
           style={{
-            width: SIDEBAR_WIDTH,
+            width: "var(--sidebar-width)",
           }}
         />
         <div
@@ -253,7 +253,7 @@ const Sidebar = React.forwardRef<
             className
           )}
           style={{
-            width: SIDEBAR_WIDTH,
+            width: "var(--sidebar-width)",
           }}
           {...props}
         >
