@@ -74,11 +74,11 @@ export default function ToolsLayout({
 
   return (
     <ToolSidebarContext.Provider value={{ isOpen, toggle }}>
-      <SidebarProvider defaultOpen={isOpen} open={isOpen}>
+      <SidebarProvider defaultOpen={isOpen} open={isOpen} width="12rem">
         <div className="flex h-screen w-full bg-background" ref={sidebarRef}>
           {/* 데스크탑 사이드바 */}
           <div className={`hidden md:block`}>
-            <ToolSidebar />
+            <ToolSidebar width="12rem" />
           </div>
 
           {/* 모바일 사이드바 */}

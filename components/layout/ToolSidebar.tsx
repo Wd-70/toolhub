@@ -107,9 +107,10 @@ const allTools = toolCategories.flatMap((category) => category.tools);
 
 interface ToolSidebarProps {
   isMobile?: boolean;
+  width?: string;
 }
 
-export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
+export function ToolSidebar({ isMobile = false, width }: ToolSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const detectedMobile = useIsMobile();
@@ -132,11 +133,11 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
 
   const currentToolId = getCurrentToolId();
 
-  // 모바일에서는 사이드바 너비를 최대화, 아니면 CSS 변수 사용
-  const sidebarClass = isOnMobile ? "w-full" : "w-[--sidebar-width]";
+  // CSS 변수가 적용되도록 w-[--sidebar-width] 클래스 사용
+  const sidebarClass = isOnMobile ? "w-full" : "";
 
   return (
-    <Sidebar className={sidebarClass}>
+    <Sidebar className={sidebarClass} width={width}>
       {!isOnMobile && <SidebarRail />}
       <SidebarHeader className="h-14">
         <div className="flex items-center justify-between px-4">
