@@ -44,6 +44,8 @@ export default function ToolsLayout({
 
   // 사이드바 너비 설정 - 여기서만 관리하여 일관성 유지
   const sidebarWidth = "12rem";
+  // 모바일 사이드바 너비 - 데스크톱과 별도로 관리
+  const mobileSidebarWidth = "18rem";
 
   // sidebarRef를 통해 UI 라이브러리의 사이드바에 접근할 수 있게 합니다
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -102,7 +104,7 @@ export default function ToolsLayout({
               className="p-0 w-full max-w-[--sidebar-width-mobile] overflow-y-auto"
               style={
                 {
-                  "--sidebar-width-mobile": sidebarWidth,
+                  "--sidebar-width-mobile": mobileSidebarWidth,
                 } as React.CSSProperties
               }
             >
@@ -113,7 +115,7 @@ export default function ToolsLayout({
                 </SheetDescription>
               </SheetHeader>
               <div className="h-full flex flex-col">
-                <MobileToolSidebar />
+                <MobileToolSidebar width={mobileSidebarWidth} />
               </div>
             </SheetContent>
           </Sheet>

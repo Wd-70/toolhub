@@ -21,8 +21,6 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "14rem";
-const SIDEBAR_WIDTH_MOBILE = "14rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
@@ -61,7 +59,7 @@ const SidebarProvider = React.forwardRef<
       defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
-      width = SIDEBAR_WIDTH,
+      width = "14rem",
       className,
       style,
       children,
@@ -211,7 +209,7 @@ const Sidebar = React.forwardRef<
             className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
-                "--sidebar-width": width || SIDEBAR_WIDTH_MOBILE,
+                "--sidebar-width": width || "14rem",
               } as React.CSSProperties
             }
             side={side}

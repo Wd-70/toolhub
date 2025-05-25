@@ -84,7 +84,11 @@ const toolCategories = [
 // 모든 도구를 단일 배열로 펼친 목록
 const allTools = toolCategories.flatMap((category) => category.tools);
 
-export function MobileToolSidebar() {
+interface MobileToolSidebarProps {
+  width?: string;
+}
+
+export function MobileToolSidebar({ width }: MobileToolSidebarProps) {
   const pathname = usePathname();
 
   // 현재 활성화된 도구 ID 찾기
@@ -103,7 +107,14 @@ export function MobileToolSidebar() {
   const currentToolId = getCurrentToolId();
 
   return (
-    <div className="flex flex-col h-full pt-4 pb-6 bg-background">
+    <div
+      className="flex flex-col h-full pt-4 pb-6 bg-background"
+      style={
+        width
+          ? ({ "--sidebar-width": width } as React.CSSProperties)
+          : undefined
+      }
+    >
       {/* 헤더 */}
       <div className="px-6 py-2 mb-4">
         <a
