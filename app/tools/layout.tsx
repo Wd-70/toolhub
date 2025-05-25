@@ -42,6 +42,9 @@ export default function ToolsLayout({
   const [isOpen, setIsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // 사이드바 너비 설정 - 여기서만 관리하여 일관성 유지
+  const sidebarWidth = "10rem";
+
   // sidebarRef를 통해 UI 라이브러리의 사이드바에 접근할 수 있게 합니다
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -74,11 +77,11 @@ export default function ToolsLayout({
 
   return (
     <ToolSidebarContext.Provider value={{ isOpen, toggle }}>
-      <SidebarProvider defaultOpen={isOpen} open={isOpen} width="12rem">
+      <SidebarProvider defaultOpen={isOpen} open={isOpen} width={sidebarWidth}>
         <div className="flex h-screen w-full bg-background" ref={sidebarRef}>
           {/* 데스크탑 사이드바 */}
           <div className={`hidden md:block`}>
-            <ToolSidebar width="12rem" />
+            <ToolSidebar width={sidebarWidth} />
           </div>
 
           {/* 모바일 사이드바 */}
@@ -97,6 +100,11 @@ export default function ToolsLayout({
             <SheetContent
               side="left"
               className="p-0 w-full max-w-[--sidebar-width-mobile] overflow-y-auto"
+              style={
+                {
+                  "--sidebar-width-mobile": sidebarWidth,
+                } as React.CSSProperties
+              }
             >
               <SheetHeader className="sr-only">
                 <SheetTitle>툴허브 사이드바</SheetTitle>

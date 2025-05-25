@@ -147,7 +147,7 @@ export function ToolSidebar({ isMobile = false, width }: ToolSidebarProps) {
             onClick={navigateToHome}
           >
             <LayoutGrid className="h-5 w-5" />
-            <span className="font-semibold text-lg">ToolHub</span>
+            <span className="font-semibold text-lg">ToolHub (TEST)</span>
           </a>
           {/* 히든으로 처리하되 DOM에는 유지해 외부에서 접근 가능하게 함 */}
           <SidebarTrigger data-trigger className="hidden" />

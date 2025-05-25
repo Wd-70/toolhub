@@ -148,7 +148,7 @@ export function MobileToolSidebar() {
 
       {/* 푸터 */}
       <div className="px-6 mt-auto">
-        <Separator className="mb-4" />
+        {/* <Separator className="mb-4" /> */}
         <div className="text-xs text-muted-foreground">
           {APP_CONFIG.COPYRIGHT}
         </div>
