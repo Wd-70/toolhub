@@ -43,7 +43,7 @@ export default function ToolsLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // 사이드바 너비 설정 - 여기서만 관리하여 일관성 유지
-  const sidebarWidth = "10rem";
+  const sidebarWidth = "15rem";
 
   // sidebarRef를 통해 UI 라이브러리의 사이드바에 접근할 수 있게 합니다
   const sidebarRef = useRef<HTMLDivElement>(null);
