@@ -1042,33 +1042,58 @@ export default function RandomPicker() {
   const renderSelectedItem = (item: ItemType, isDialog: boolean = false) => {
     if (!item) return null;
 
+    // 이미지 확대 비율 함수 추가
+    const getImageScale = () => {
+      // 이미지 URL에서 숫자 이미지인지 확인 (작은 이미지일 가능성이 높음)
+      const isNumberImage =
+        item.type === "image" &&
+        (item.content.includes("numbers/") ||
+          item.displayName?.includes("숫자"));
+
+      // 숫자 이미지는 더 크게 확대
+      return isNumberImage ? 1.8 : 1.4;
+    };
+
     return (
       <div
-        className={`flex flex-col items-center gap-2 ${
-          isDialog ? "w-full h-full" : ""
+        className={`flex flex-col items-center ${
+          isDialog ? "w-full h-full justify-center gap-6" : "gap-2"
         }`}
       >
         {item.type === "text" ? (
           <div
             className={`font-bold text-purple-600 dark:text-purple-400 ${
-              isDialog ? "text-4xl md:text-6xl" : "text-xl"
+              isDialog ? "text-5xl md:text-7xl" : "text-xl"
             }`}
           >
             {item.content}
           </div>
         ) : (
           <>
-            <img
-              src={item.content || "/placeholder.svg"}
-              alt="Selected item"
-              className={`object-contain ${
-                isDialog ? "max-w-full max-h-full" : "h-20"
-              }`}
-              onError={handleImageError}
-            />
+            <div
+              className={
+                isDialog
+                  ? "flex items-center justify-center w-full h-full max-h-[85vh]"
+                  : ""
+              }
+            >
+              <img
+                src={item.content || "/placeholder.svg"}
+                alt="Selected item"
+                className={`${
+                  isDialog
+                    ? "object-contain w-auto h-auto max-w-[95vw] max-h-[85vh]"
+                    : "h-20 object-contain"
+                }`}
+                onError={handleImageError}
+                style={
+                  isDialog ? { transform: `scale(${getImageScale()})` } : {}
+                }
+              />
+            </div>
             <span
               className={`${
-                isDialog ? "text-xl md:text-2xl text-white" : "text-sm"
+                isDialog ? "text-xl md:text-2xl text-white mt-4" : "text-sm"
               }`}
             >
               {item.displayName || "이미지"}
@@ -1116,13 +1141,15 @@ export default function RandomPicker() {
         <FullscreenDialogContent>
           {selectedItem && (
             <div
-              className="w-full h-full flex items-center justify-center relative"
+              className="w-full h-full flex items-center justify-center relative cursor-pointer"
               onClick={() => setIsFullscreenDialogOpen(false)}
             >
-              {renderSelectedItem(selectedItem, true)}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                {renderSelectedItem(selectedItem, true)}
+              </div>
 
               {/* 닫기 버튼 추가 */}
-              <div className="absolute top-4 right-4 z-50">
+              <div className="absolute top-4 right-4 z-50 pointer-events-auto">
                 <Button
                   variant="outline"
                   size="sm"
