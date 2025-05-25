@@ -24,6 +24,7 @@ import {
   HelpCircle,
   Lightbulb,
   Copyright,
+  X,
 } from "lucide-react";
 import {
   Accordion,
@@ -40,6 +41,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DOMAIN_CONFIG } from "@/lib/constants";
+import {
+  FullscreenDialog,
+  FullscreenDialogContent,
+  FullscreenDialogTrigger,
+} from "@/components/ui/fullscreen-dialog";
 
 type ItemType = {
   id: string;
@@ -276,6 +282,10 @@ export default function RandomPicker() {
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [showDebug, setShowDebug] = useState<boolean>(DEBUG_MODE_ENABLED);
   const [deviceInfo, setDeviceInfo] = useState<string>("");
+
+  // 다이얼로그 표시 상태 추가
+  const [isFullscreenDialogOpen, setIsFullscreenDialogOpen] =
+    useState<boolean>(false);
 
   // 디버그 로그 함수
   const addDebugLog = (message: string) => {
@@ -742,6 +752,9 @@ export default function RandomPicker() {
               ...history,
             ].slice(0, 10)
           );
+
+          // 전체화면 다이얼로그 표시
+          setIsFullscreenDialogOpen(true);
         } else {
           // 중앙 항목을 찾지 못한 경우 랜덤으로 선택 (폴백)
           const randomIndex = Math.floor(Math.random() * items.length);
@@ -755,6 +768,9 @@ export default function RandomPicker() {
               ...history,
             ].slice(0, 10)
           );
+
+          // 전체화면 다이얼로그 표시
+          setIsFullscreenDialogOpen(true);
         }
 
         setIsSpinning(false);
@@ -1022,6 +1038,47 @@ export default function RandomPicker() {
     img.onerror = null; // 무한 오류 방지
   };
 
+  // 선택된 항목 표시 함수
+  const renderSelectedItem = (item: ItemType, isDialog: boolean = false) => {
+    if (!item) return null;
+
+    return (
+      <div
+        className={`flex flex-col items-center gap-2 ${
+          isDialog ? "w-full h-full" : ""
+        }`}
+      >
+        {item.type === "text" ? (
+          <div
+            className={`font-bold text-purple-600 dark:text-purple-400 ${
+              isDialog ? "text-4xl md:text-6xl" : "text-xl"
+            }`}
+          >
+            {item.content}
+          </div>
+        ) : (
+          <>
+            <img
+              src={item.content || "/placeholder.svg"}
+              alt="Selected item"
+              className={`object-contain ${
+                isDialog ? "max-w-full max-h-full" : "h-20"
+              }`}
+              onError={handleImageError}
+            />
+            <span
+              className={`${
+                isDialog ? "text-xl md:text-2xl text-white" : "text-sm"
+              }`}
+            >
+              {item.displayName || "이미지"}
+            </span>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8">
       <div className="max-w-3xl mx-auto text-center space-y-2">
@@ -1050,6 +1107,39 @@ export default function RandomPicker() {
           </div>
         )}
       </div>
+
+      {/* 전체화면 다이얼로그 - 위치를 여기로 이동 */}
+      <FullscreenDialog
+        open={isFullscreenDialogOpen}
+        onOpenChange={setIsFullscreenDialogOpen}
+      >
+        <FullscreenDialogContent>
+          {selectedItem && (
+            <div
+              className="w-full h-full flex items-center justify-center relative"
+              onClick={() => setIsFullscreenDialogOpen(false)}
+            >
+              {renderSelectedItem(selectedItem, true)}
+
+              {/* 닫기 버튼 추가 */}
+              <div className="absolute top-4 right-4 z-50">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-black/30 border-gray-600 hover:bg-black/50 text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFullscreenDialogOpen(false);
+                  }}
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  닫기
+                </Button>
+              </div>
+            </div>
+          )}
+        </FullscreenDialogContent>
+      </FullscreenDialog>
 
       <div className="flex flex-col md:flex-row gap-8 max-w-5xl mx-auto">
         <div className="md:w-2/3">
@@ -1135,30 +1225,19 @@ export default function RandomPicker() {
                     </div>
                   </div>
 
-                  {/* 선택 결과 */}
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-center">
+                  {/* 선택 결과 - 클릭 시 다이얼로그 표시 기능 추가 */}
+                  <div
+                    className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    onClick={() =>
+                      selectedItem && setIsFullscreenDialogOpen(true)
+                    }
+                  >
                     {selectedItem ? (
                       <div className="space-y-2">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           선택된 항목:
                         </p>
-                        <div className="font-bold text-xl text-purple-600 dark:text-purple-400">
-                          {selectedItem.type === "text" ? (
-                            selectedItem.content
-                          ) : (
-                            <div className="flex flex-col items-center gap-2">
-                              <img
-                                src={selectedItem.content || "/placeholder.svg"}
-                                alt="Selected item"
-                                className="h-20 object-contain"
-                                onError={handleImageError}
-                              />
-                              <span className="text-sm">
-                                {selectedItem.displayName || "이미지"}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        {renderSelectedItem(selectedItem)}
                       </div>
                     ) : (
                       <p className="text-gray-500 dark:text-gray-400">
