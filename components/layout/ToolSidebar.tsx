@@ -132,13 +132,11 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
 
   const currentToolId = getCurrentToolId();
 
-  // 모바일에서는 사이드바 너비를 최대화하고, 그렇지 않으면 CSS 변수를 통해 너비를 제어
-  const sidebarStyle = isOnMobile
-    ? { width: "100%" }
-    : { width: "var(--sidebar-width)" };
+  // 모바일에서는 사이드바 너비를 최대화, 아니면 CSS 변수 사용
+  const sidebarClass = isOnMobile ? "w-full" : "w-[--sidebar-width]";
 
   return (
-    <Sidebar style={sidebarStyle}>
+    <Sidebar className={sidebarClass}>
       {!isOnMobile && <SidebarRail />}
       <SidebarHeader className="h-14">
         <div className="flex items-center justify-between px-4">

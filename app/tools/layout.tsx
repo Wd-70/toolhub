@@ -20,7 +20,6 @@ import {
   SheetHeader,
 } from "@/components/ui/sheet";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { getSidebarWidth, setSidebarWidth } from "@/lib/constants";
 
 // 사이드바 상태를 위한 컨텍스트 생성
 export const ToolSidebarContext = createContext<{
@@ -71,10 +70,6 @@ export default function ToolsLayout({
       const sidebarState = sidebarCookie.split("=")[1];
       setIsOpen(sidebarState === "true");
     }
-
-    // localStorage에서 사이드바 너비 설정 불러오기
-    const savedWidth = getSidebarWidth();
-    setSidebarWidth(savedWidth);
   }, []);
 
   return (
@@ -101,7 +96,7 @@ export default function ToolsLayout({
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="p-0 w-full max-w-[280px] overflow-y-auto"
+              className="p-0 w-full max-w-[--sidebar-width-mobile] overflow-y-auto"
             >
               <SheetHeader className="sr-only">
                 <SheetTitle>툴허브 사이드바</SheetTitle>

@@ -17,7 +17,7 @@ export const DOMAIN_CONFIG = {
 
   // 툴별 서브도메인 URL 생성
   getToolUrl: function (toolId: string) {
-    return `/tools/${toolId}`;
+    return `${this.PROTOCOL}://${toolId}.${this.MAIN_DOMAIN}`;
   },
 
   // 정적 자산 URL 생성
