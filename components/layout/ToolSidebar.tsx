@@ -178,11 +178,11 @@ export function ToolSidebar({ isMobile = false, width }: ToolSidebarProps) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      {/* <SidebarFooter className="p-4">
         <div className="space-y-2">
           <Separator />
         </div>
-      </SidebarFooter>
+      </SidebarFooter> */}
     </Sidebar>
   );
 }
