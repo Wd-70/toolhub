@@ -32,7 +32,6 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
-  SidebarSettings,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -183,7 +182,6 @@ export function ToolSidebar({ isMobile = false }: ToolSidebarProps) {
       <SidebarFooter className="p-4">
         <div className="space-y-2">
           <Separator />
-          <SidebarSettings />
         </div>
       </SidebarFooter>
     </Sidebar>
