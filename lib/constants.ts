@@ -65,20 +65,66 @@ export const APP_CONFIG = {
 
 // 사이드바 관련 설정 상수
 export const SIDEBAR_WIDTH_OPTIONS = {
-  small: "10rem",
-  medium: "12rem",
-  large: "16rem",
-  extraLarge: "20rem",
+  small: "8rem", // 작은 크기 (128px)
+  medium: "12rem", // 중간 크기 (192px)
+  large: "16rem", // 큰 크기 (256px)
+  extraLarge: "20rem", // 매우 큰 크기 (320px)
 };
 
 // 사이드바 너비 설정 함수 - localStorage에 저장하여 새로고침해도 유지
 export const setSidebarWidth = (width: string) => {
   if (typeof window !== "undefined") {
+    // localStorage에 저장
     localStorage.setItem("sidebar-width", width);
 
-    // 실시간으로 CSS 변수 업데이트
+    // 실시간으로 CSS 변수 업데이트 (루트 요소)
     document.documentElement.style.setProperty("--sidebar-width", width);
     document.documentElement.style.setProperty("--sidebar-width-mobile", width);
+
+    // 직접 DOM 요소에도 적용 (더 확실한 적용을 위해)
+    try {
+      // 모든 사이드바 요소에 직접 스타일 적용
+      const sidebarElements = document.querySelectorAll("[data-sidebar]");
+      sidebarElements.forEach((el) => {
+        (el as HTMLElement).style.width = width;
+      });
+
+      // 사이드바 래퍼에도 직접 적용
+      const wrapperElement = document.querySelector("[data-sidebar-wrapper]");
+      if (wrapperElement) {
+        (wrapperElement as HTMLElement).style.setProperty(
+          "--sidebar-width",
+          width
+        );
+      }
+
+      // 모든 사이드바 그룹에도 직접 적용
+      const groupElements = document.querySelectorAll('[data-sidebar="group"]');
+      groupElements.forEach((el) => {
+        (el as HTMLElement).style.width = "100%";
+      });
+
+      // 사이드바 컨텐츠에도 적용
+      const contentElements = document.querySelectorAll(
+        '[data-sidebar="content"]'
+      );
+      contentElements.forEach((el) => {
+        (el as HTMLElement).style.width = "100%";
+      });
+
+      // Sidebar 컴포넌트에도 직접 적용
+      const sidebarComponents = document.querySelectorAll(
+        '.Sidebar, [class*="Sidebar"]'
+      );
+      sidebarComponents.forEach((el) => {
+        (el as HTMLElement).style.width = width;
+      });
+
+      // 강제 리플로우 유도
+      window.dispatchEvent(new Event("resize"));
+    } catch (e) {
+      console.error("사이드바 너비 적용 중 오류:", e);
+    }
   }
 };
 

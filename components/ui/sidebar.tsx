@@ -75,6 +75,12 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
 
+    // 마운트 시 localStorage에서 사이드바 너비 로드
+    React.useEffect(() => {
+      const savedWidth = getSidebarWidth();
+      setSidebarWidth(savedWidth);
+    }, []);
+
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
     const [_open, _setOpen] = React.useState(defaultOpen);
@@ -134,13 +140,19 @@ const SidebarProvider = React.forwardRef<
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     );
 
+    // 현재 localStorage에 저장된 너비 가져오기
+    const currentWidth =
+      typeof window !== "undefined"
+        ? localStorage.getItem("sidebar-width") || SIDEBAR_WIDTH
+        : SIDEBAR_WIDTH;
+
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
           <div
             style={
               {
-                "--sidebar-width": SIDEBAR_WIDTH,
+                "--sidebar-width": currentWidth,
                 "--sidebar-width-mobile": SIDEBAR_WIDTH_MOBILE,
                 "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
                 ...style,
@@ -192,7 +204,10 @@ const Sidebar = React.forwardRef<
             className
           )}
           style={{
-            width: "var(--sidebar-width)",
+            width:
+              typeof window !== "undefined"
+                ? localStorage.getItem("sidebar-width") || SIDEBAR_WIDTH
+                : SIDEBAR_WIDTH,
           }}
           ref={ref}
           {...props}
@@ -211,7 +226,11 @@ const Sidebar = React.forwardRef<
             className="bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
-                width: "var(--sidebar-width-mobile)",
+                width:
+                  typeof window !== "undefined"
+                    ? localStorage.getItem("sidebar-width") ||
+                      SIDEBAR_WIDTH_MOBILE
+                    : SIDEBAR_WIDTH_MOBILE,
               } as React.CSSProperties
             }
             side={side}
@@ -221,6 +240,12 @@ const Sidebar = React.forwardRef<
         </Sheet>
       );
     }
+
+    // 현재 저장된 사이드바 너비 가져오기
+    const currentWidth =
+      typeof window !== "undefined"
+        ? localStorage.getItem("sidebar-width") || SIDEBAR_WIDTH
+        : SIDEBAR_WIDTH;
 
     return (
       <div
@@ -242,7 +267,7 @@ const Sidebar = React.forwardRef<
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
           style={{
-            width: "var(--sidebar-width)",
+            width: currentWidth,
           }}
         />
         <div
@@ -258,7 +283,7 @@ const Sidebar = React.forwardRef<
             className
           )}
           style={{
-            width: "var(--sidebar-width)",
+            width: currentWidth,
           }}
           {...props}
         >
@@ -266,7 +291,7 @@ const Sidebar = React.forwardRef<
             data-sidebar="sidebar"
             className="flex h-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
             style={{
-              width: "var(--sidebar-width)",
+              width: "100%",
             }}
           >
             {children}
@@ -779,8 +804,36 @@ const SidebarSettings = React.forwardRef<
 
   // 너비 변경 핸들러
   const handleWidthChange = (newWidth: string) => {
+    // 너비 값 업데이트
     setWidth(newWidth);
+
+    // localStorage에 저장 및 CSS 변수 업데이트
     setSidebarWidth(newWidth);
+
+    // 강제로 스타일 직접 적용 (추가)
+    if (typeof document !== "undefined") {
+      document.documentElement.style.setProperty("--sidebar-width", newWidth);
+
+      // 모든 사이드바 요소에 직접 스타일 적용
+      const sidebarElements = document.querySelectorAll("[data-sidebar]");
+      sidebarElements.forEach((el) => {
+        (el as HTMLElement).style.width = newWidth;
+      });
+
+      // 사이드바 래퍼에도 직접 적용
+      const wrapperElement = document.querySelector("[data-sidebar-wrapper]");
+      if (wrapperElement) {
+        (wrapperElement as HTMLElement).style.setProperty(
+          "--sidebar-width",
+          newWidth
+        );
+      }
+    }
+
+    // 작은 지연 후 페이지 리플로우 강제 발생 (추가)
+    setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+    }, 50);
   };
 
   return (
