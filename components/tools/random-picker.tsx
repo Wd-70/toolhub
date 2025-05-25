@@ -287,6 +287,14 @@ export default function RandomPicker() {
   const [isFullscreenDialogOpen, setIsFullscreenDialogOpen] =
     useState<boolean>(false);
 
+  // 이미지 크기 관련 상태 변수들 - 최상위 레벨로 이동
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [containerSize, setContainerSize] = useState({
+    width: "95vw",
+    height: "85vh",
+  });
+  const imgRef = useRef<HTMLImageElement>(null);
+
   // 디버그 로그 함수
   const addDebugLog = (message: string) => {
     // DEBUG_MODE_ENABLED가 true일 때만 로그 추가
@@ -1038,111 +1046,9 @@ export default function RandomPicker() {
     img.onerror = null; // 무한 오류 방지
   };
 
-  // 선택된 항목 표시 함수
+  // 선택된 항목 표시 함수 - 훅 사용하지 않도록 수정
   const renderSelectedItem = (item: ItemType, isDialog: boolean = false) => {
     if (!item) return null;
-
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const [containerSize, setContainerSize] = useState({
-      width: "95vw",
-      height: "85vh",
-    });
-    const imgRef = useRef<HTMLImageElement>(null);
-
-    // 이미지 로드 완료 시 원본 크기 확인 및 컨테이너 크기 계산
-    const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-      const img = e.currentTarget;
-      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-        updateContainerSize(img.naturalWidth, img.naturalHeight);
-        setImageLoaded(true);
-      }
-    };
-
-    // 컨테이너 크기를 계산하는 함수
-    const updateContainerSize = (
-      naturalWidth: number,
-      naturalHeight: number
-    ) => {
-      // 작은 이미지인지 확인 (300px 미만으로 기준 상향)
-      const isSmallImage = naturalWidth < 300 || naturalHeight < 300;
-      const isVerySmallImage = naturalWidth < 100 || naturalHeight < 100;
-
-      // 최대 확대 배율 설정 - 더 작은 이미지는 더 크게 확대
-      const maxScale = isVerySmallImage ? 4.0 : isSmallImage ? 3.5 : 2.5;
-
-      // 화면 크기의 95%와 85%를 최대값으로 설정
-      const maxWidthPx = window.innerWidth * 0.95;
-      const maxHeightPx = window.innerHeight * 0.85;
-
-      // 이미지 확대 후 크기 계산
-      let scaledWidth = naturalWidth * maxScale;
-      let scaledHeight = naturalHeight * maxScale;
-
-      // 가로세로 비율 유지하면서 화면에 맞게 조정
-      const aspectRatio = naturalWidth / naturalHeight;
-
-      // 화면 크기 제한에 따라 비율 유지하며 크기 조정
-      if (scaledWidth > maxWidthPx) {
-        scaledWidth = maxWidthPx;
-        scaledHeight = scaledWidth / aspectRatio;
-      }
-
-      if (scaledHeight > maxHeightPx) {
-        scaledHeight = maxHeightPx;
-        scaledWidth = scaledHeight * aspectRatio;
-      }
-
-      // 작은 이미지의 경우 최소 크기 설정 (너무 작아 보이지 않도록)
-      // 매우 작은 이미지는 더 큰 최소값 설정
-      const minWidth = isVerySmallImage
-        ? Math.min(400, maxWidthPx)
-        : isSmallImage
-        ? Math.min(300, maxWidthPx)
-        : 0;
-      const minHeight = isVerySmallImage
-        ? Math.min(400, maxHeightPx)
-        : isSmallImage
-        ? Math.min(300, maxHeightPx)
-        : 0;
-
-      scaledWidth = Math.max(scaledWidth, minWidth);
-      scaledHeight = Math.max(scaledHeight, minHeight);
-
-      // 최종 크기가 화면 제한을 넘지 않도록 다시 확인
-      if (scaledWidth > maxWidthPx) {
-        const ratio = maxWidthPx / scaledWidth;
-        scaledWidth = maxWidthPx;
-        scaledHeight = scaledHeight * ratio;
-      }
-
-      if (scaledHeight > maxHeightPx) {
-        const ratio = maxHeightPx / scaledHeight;
-        scaledHeight = maxHeightPx;
-        scaledWidth = scaledWidth * ratio;
-      }
-
-      setContainerSize({
-        width: `${Math.round(scaledWidth)}px`,
-        height: `${Math.round(scaledHeight)}px`,
-      });
-    };
-
-    // 창 크기 변경 시 컨테이너 크기 재계산
-    useEffect(() => {
-      if (isDialog && imgRef.current && imageLoaded) {
-        const handleResize = () => {
-          if (imgRef.current) {
-            updateContainerSize(
-              imgRef.current.naturalWidth,
-              imgRef.current.naturalHeight
-            );
-          }
-        };
-
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-      }
-    }, [isDialog, imageLoaded]);
 
     return (
       <div
@@ -1188,7 +1094,7 @@ export default function RandomPicker() {
                 }
               >
                 <img
-                  ref={imgRef}
+                  ref={isDialog ? imgRef : undefined}
                   src={item.content || "/placeholder.svg"}
                   alt="Selected item"
                   onLoad={isDialog ? handleImageLoad : undefined}
@@ -1212,6 +1118,81 @@ export default function RandomPicker() {
         )}
       </div>
     );
+  };
+
+  // 컨테이너 크기를 계산하는 함수 - 최상위 레벨로 이동
+  const updateContainerSize = (naturalWidth: number, naturalHeight: number) => {
+    // 작은 이미지인지 확인 (300px 미만으로 기준 상향)
+    const isSmallImage = naturalWidth < 300 || naturalHeight < 300;
+    const isVerySmallImage = naturalWidth < 100 || naturalHeight < 100;
+
+    // 최대 확대 배율 설정 - 더 작은 이미지는 더 크게 확대
+    const maxScale = isVerySmallImage ? 4.0 : isSmallImage ? 3.5 : 2.5;
+
+    // 화면 크기의 95%와 85%를 최대값으로 설정
+    const maxWidthPx = window.innerWidth * 0.95;
+    const maxHeightPx = window.innerHeight * 0.85;
+
+    // 이미지 확대 후 크기 계산
+    let scaledWidth = naturalWidth * maxScale;
+    let scaledHeight = naturalHeight * maxScale;
+
+    // 가로세로 비율 유지하면서 화면에 맞게 조정
+    const aspectRatio = naturalWidth / naturalHeight;
+
+    // 화면 크기 제한에 따라 비율 유지하며 크기 조정
+    if (scaledWidth > maxWidthPx) {
+      scaledWidth = maxWidthPx;
+      scaledHeight = scaledWidth / aspectRatio;
+    }
+
+    if (scaledHeight > maxHeightPx) {
+      scaledHeight = maxHeightPx;
+      scaledWidth = scaledHeight * aspectRatio;
+    }
+
+    // 작은 이미지의 경우 최소 크기 설정 (너무 작아 보이지 않도록)
+    // 매우 작은 이미지는 더 큰 최소값 설정
+    const minWidth = isVerySmallImage
+      ? Math.min(400, maxWidthPx)
+      : isSmallImage
+      ? Math.min(300, maxWidthPx)
+      : 0;
+    const minHeight = isVerySmallImage
+      ? Math.min(400, maxHeightPx)
+      : isSmallImage
+      ? Math.min(300, maxHeightPx)
+      : 0;
+
+    scaledWidth = Math.max(scaledWidth, minWidth);
+    scaledHeight = Math.max(scaledHeight, minHeight);
+
+    // 최종 크기가 화면 제한을 넘지 않도록 다시 확인
+    if (scaledWidth > maxWidthPx) {
+      const ratio = maxWidthPx / scaledWidth;
+      scaledWidth = maxWidthPx;
+      scaledHeight = scaledHeight * ratio;
+    }
+
+    if (scaledHeight > maxHeightPx) {
+      const ratio = maxHeightPx / scaledHeight;
+      scaledHeight = maxHeightPx;
+      scaledWidth = scaledWidth * ratio;
+    }
+
+    setContainerSize({
+      width: `${Math.round(scaledWidth)}px`,
+      height: `${Math.round(scaledHeight)}px`,
+    });
+  };
+
+  // 이미지 로드 완료 시 원본 크기 확인 및 컨테이너 크기 계산
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+      updateContainerSize(img.naturalWidth, img.naturalHeight);
+      setImageLoaded(true);
+    }
   };
 
   return (
