@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,6 +29,8 @@ import {
   Info,
   HelpCircle,
   Lightbulb,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import {
   Accordion,
@@ -42,6 +44,10 @@ import { useToolState } from "@/hooks/use-tool-state";
 interface MarkdownEditorState {
   markdown: string;
   html: string;
+  history?: {
+    past: string[];
+    future: string[];
+  };
 }
 
 // 기본 상태 값
@@ -71,11 +77,16 @@ function hello() {
 
 이 에디터에서 마크다운을 작성하고 실시간으로 미리보기를 확인하세요!`,
   html: "",
+  history: {
+    past: [],
+    future: [],
+  },
 };
 
 export default function MarkdownEditor() {
   // useToolState 훅 사용
   const { getToolState, updateToolState, addHistoryEntry } = useToolState();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // 도구 상태 가져오기
   const toolState = getToolState<MarkdownEditorState>("markdown");
@@ -88,6 +99,10 @@ export default function MarkdownEditor() {
   const [localStorageAvailable, setLocalStorageAvailable] =
     useState<boolean>(false);
   const [isClient, setIsClient] = useState<boolean>(false);
+  const [history, setHistory] = useState<{
+    past: string[];
+    future: string[];
+  }>(state.history || { past: [], future: [] });
 
   // 상태 업데이트 함수 - 상태 변경을 Context에 저장
   const updateMarkdownState = () => {
@@ -95,6 +110,7 @@ export default function MarkdownEditor() {
     updateToolState<MarkdownEditorState>("markdown", {
       markdown,
       html,
+      history,
     });
   };
 
@@ -125,45 +141,192 @@ export default function MarkdownEditor() {
 
     checkLocalStorage();
 
+    // 키보드 이벤트 리스너 등록
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Z 또는 Cmd+Z (Mac) - 실행 취소
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      // Ctrl+Y 또는 Cmd+Shift+Z (Mac) - 재실행
+      if (
+        ((e.ctrlKey || e.metaKey) && e.key === "y") ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z")
+      ) {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
     // 도구 열림 이벤트 기록
     addHistoryEntry("markdown", "open");
 
-    // 컴포넌트 언마운트 시 도구 닫힘 이벤트 기록
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거 및 도구 닫힘 이벤트 기록
     return () => {
+      document.removeEventListener("keydown", handleKeyDown);
       addHistoryEntry("markdown", "close");
     };
   }, []);
 
+  // 실행 취소 함수
+  const undo = () => {
+    if (history.past.length === 0) return;
+
+    const previous = history.past[history.past.length - 1];
+    const newPast = history.past.slice(0, history.past.length - 1);
+
+    setHistory({
+      past: newPast,
+      future: [markdown, ...history.future],
+    });
+
+    setMarkdown(previous);
+  };
+
+  // 재실행 함수
+  const redo = () => {
+    if (history.future.length === 0) return;
+
+    const next = history.future[0];
+    const newFuture = history.future.slice(1);
+
+    setHistory({
+      past: [...history.past, markdown],
+      future: newFuture,
+    });
+
+    setMarkdown(next);
+  };
+
   useEffect(() => {
-    // 마크다운을 HTML로 변환 (간단한 구현)
+    // 마크다운을 HTML로 변환 (개선된 구현)
     const convertToHtml = (md: string) => {
-      let html = md
-        // 헤더
+      let html = md;
+
+      // 임시로 코드 블록을 보존
+      const codeBlocks: string[] = [];
+      html = html.replace(/```([\s\S]*?)```/g, (match) => {
+        codeBlocks.push(match);
+        return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+      });
+
+      // 인라인 코드 보존
+      const inlineCodes: string[] = [];
+      html = html.replace(/`([^`]+)`/g, (match) => {
+        inlineCodes.push(match);
+        return `__INLINE_CODE_${inlineCodes.length - 1}__`;
+      });
+
+      // 헤더 변환
+      html = html
         .replace(/^# (.*$)/gm, "<h1>$1</h1>")
         .replace(/^## (.*$)/gm, "<h2>$1</h2>")
         .replace(/^### (.*$)/gm, "<h3>$1</h3>")
-        // 굵게, 기울임
+        .replace(/^#### (.*$)/gm, "<h4>$1</h4>")
+        .replace(/^##### (.*$)/gm, "<h5>$1</h5>")
+        .replace(/^###### (.*$)/gm, "<h6>$1</h6>");
+
+      // 굵게, 기울임, 취소선
+      html = html
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         .replace(/\*(.*?)\*/g, "<em>$1</em>")
-        // 링크
-        .replace(/\[(.*?)\]$$(.*?)$$/g, '<a href="$2" target="_blank">$1</a>')
-        // 코드 블록
-        .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>")
-        // 인라인 코드
-        .replace(/`([^`]+)`/g, "<code>$1</code>")
-        // 순서 없는 목록
-        .replace(/^- (.*$)/gm, "<li>$1</li>")
-        // 순서 있는 목록
-        .replace(/^\d+\. (.*$)/gm, "<li>$1</li>")
-        // 줄바꿈
-        .replace(/\n/g, "<br>");
+        .replace(/~~(.*?)~~/g, "<del>$1</del>");
 
-      // 목록 아이템을 ul, ol로 감싸기 (간단한 구현)
-      html = html.replace(/<li>.*?<\/li>/g, (match) => {
-        if (match.startsWith("<li>1.")) {
-          return `<ol>${match}</ol>`;
+      // 링크 (수정된 정규식)
+      html = html.replace(
+        /\[(.*?)\]\((.*?)\)/g,
+        '<a href="$2" target="_blank">$1</a>'
+      );
+
+      // 이미지
+      html = html.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" />');
+
+      // 순서 없는 목록 아이템
+      const ulItems: string[] = [];
+      html = html.replace(/^- (.*$)/gm, (match, p1) => {
+        ulItems.push(`<li>${p1}</li>`);
+        return `__UL_ITEM_${ulItems.length - 1}__`;
+      });
+
+      // 순서 있는 목록 아이템
+      const olItems: string[] = [];
+      html = html.replace(/^\d+\. (.*$)/gm, (match, p1) => {
+        olItems.push(`<li>${p1}</li>`);
+        return `__OL_ITEM_${olItems.length - 1}__`;
+      });
+
+      // 목록 그룹화
+      let inOl = false;
+      let inUl = false;
+      let lines = html.split("\n");
+
+      for (let i = 0; i < lines.length; i++) {
+        // 순서 있는 목록 처리
+        if (lines[i].startsWith("__OL_ITEM_")) {
+          const index = parseInt(
+            lines[i].match(/__OL_ITEM_(\d+)__/)?.[1] || "0"
+          );
+
+          if (!inOl) {
+            lines[i] = `<ol>${olItems[index]}`;
+            inOl = true;
+          } else {
+            lines[i] = olItems[index];
+          }
+
+          // 다음 줄이 목록이 아니면 목록 닫기
+          if (
+            i === lines.length - 1 ||
+            !lines[i + 1].startsWith("__OL_ITEM_")
+          ) {
+            lines[i] += "</ol>";
+            inOl = false;
+          }
         }
-        return `<ul>${match}</ul>`;
+        // 순서 없는 목록 처리
+        else if (lines[i].startsWith("__UL_ITEM_")) {
+          const index = parseInt(
+            lines[i].match(/__UL_ITEM_(\d+)__/)?.[1] || "0"
+          );
+
+          if (!inUl) {
+            lines[i] = `<ul>${ulItems[index]}`;
+            inUl = true;
+          } else {
+            lines[i] = ulItems[index];
+          }
+
+          // 다음 줄이 목록이 아니면 목록 닫기
+          if (
+            i === lines.length - 1 ||
+            !lines[i + 1].startsWith("__UL_ITEM_")
+          ) {
+            lines[i] += "</ul>";
+            inUl = false;
+          }
+        }
+      }
+
+      html = lines.join("<br>");
+
+      // 코드 블록 복원
+      codeBlocks.forEach((block, i) => {
+        const code = block.replace(/```([\s\S]*?)```/g, "$1").trim();
+        html = html.replace(
+          `__CODE_BLOCK_${i}__`,
+          `<pre><code>${code}</code></pre>`
+        );
+      });
+
+      // 인라인 코드 복원
+      inlineCodes.forEach((code, i) => {
+        const inlineCode = code.replace(/`([^`]+)`/g, "$1");
+        html = html.replace(
+          `__INLINE_CODE_${i}__`,
+          `<code>${inlineCode}</code>`
+        );
       });
 
       return html;
@@ -182,9 +345,19 @@ export default function MarkdownEditor() {
   }, [markdown, localStorageAvailable]);
 
   const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMarkdown(e.target.value);
-    // 업데이트 이벤트 기록
-    addHistoryEntry("markdown", "update");
+    const newValue = e.target.value;
+
+    // 현재 상태를 history에 추가
+    if (markdown !== newValue) {
+      setHistory({
+        past: [...history.past, markdown],
+        future: [], // 새로운 변경이 있으면 future는 초기화
+      });
+
+      setMarkdown(newValue);
+      // 업데이트 이벤트 기록
+      addHistoryEntry("markdown", "update");
+    }
   };
 
   const copyMarkdown = () => {
@@ -206,7 +379,7 @@ export default function MarkdownEditor() {
   };
 
   const insertMarkdown = (syntax: string) => {
-    const textarea = document.querySelector("textarea");
+    const textarea = textareaRef.current;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
@@ -215,6 +388,12 @@ export default function MarkdownEditor() {
 
     let newText = "";
     let newCursorPos = 0;
+
+    // 현재 상태를 history에 추가
+    setHistory({
+      past: [...history.past, markdown],
+      future: [], // 새로운 변경이 있으면 future는 초기화
+    });
 
     switch (syntax) {
       case "bold":
@@ -352,6 +531,7 @@ export default function MarkdownEditor() {
                       size="sm"
                       onClick={() => insertMarkdown("bold")}
                       className="h-8 px-2"
+                      title="굵게 (Ctrl+B)"
                     >
                       <Bold className="h-4 w-4" />
                     </Button>
@@ -360,6 +540,7 @@ export default function MarkdownEditor() {
                       size="sm"
                       onClick={() => insertMarkdown("italic")}
                       className="h-8 px-2"
+                      title="기울임 (Ctrl+I)"
                     >
                       <Italic className="h-4 w-4" />
                     </Button>
@@ -368,6 +549,7 @@ export default function MarkdownEditor() {
                       size="sm"
                       onClick={() => insertMarkdown("list")}
                       className="h-8 px-2"
+                      title="순서 없는 목록"
                     >
                       <List className="h-4 w-4" />
                     </Button>
@@ -376,6 +558,7 @@ export default function MarkdownEditor() {
                       size="sm"
                       onClick={() => insertMarkdown("ordered-list")}
                       className="h-8 px-2"
+                      title="순서 있는 목록"
                     >
                       <ListOrdered className="h-4 w-4" />
                     </Button>
@@ -384,6 +567,7 @@ export default function MarkdownEditor() {
                       size="sm"
                       onClick={() => insertMarkdown("link")}
                       className="h-8 px-2"
+                      title="링크 (Ctrl+K)"
                     >
                       <LinkIcon className="h-4 w-4" />
                     </Button>
@@ -392,6 +576,7 @@ export default function MarkdownEditor() {
                       size="sm"
                       onClick={() => insertMarkdown("image")}
                       className="h-8 px-2"
+                      title="이미지"
                     >
                       <ImageIcon className="h-4 w-4" />
                     </Button>
@@ -400,11 +585,33 @@ export default function MarkdownEditor() {
                       size="sm"
                       onClick={() => insertMarkdown("code")}
                       className="h-8 px-2"
+                      title="코드 블록"
                     >
                       <Code className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={undo}
+                      className="h-8 px-2 ml-2"
+                      title="실행 취소 (Ctrl+Z)"
+                      disabled={history.past.length === 0}
+                    >
+                      <Undo2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={redo}
+                      className="h-8 px-2"
+                      title="다시 실행 (Ctrl+Y 또는 Ctrl+Shift+Z)"
+                      disabled={history.future.length === 0}
+                    >
+                      <Redo2 className="h-4 w-4" />
+                    </Button>
                   </div>
                   <Textarea
+                    ref={textareaRef}
                     value={markdown}
                     onChange={handleMarkdownChange}
                     className="font-mono h-[400px] resize-none"
@@ -474,6 +681,10 @@ export default function MarkdownEditor() {
                           <li>
                             작성한 문서는 로컬 스토리지에 자동 저장되며,
                             다운로드 버튼을 통해 파일로 저장할 수 있습니다.
+                          </li>
+                          <li>
+                            실행 취소(Ctrl+Z)와 재실행(Ctrl+Y)을 사용하여 편집
+                            내역을 관리할 수 있습니다.
                           </li>
                         </ul>
                       </AccordionContent>
