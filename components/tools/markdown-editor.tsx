@@ -498,7 +498,7 @@ export default function MarkdownEditor() {
     <div className="space-y-8">
       <div className="max-w-3xl mx-auto text-center space-y-2">
         <h2 className="text-2xl font-bold text-emerald-800 dark:text-emerald-300">
-          간편한 마크다운 문서 작성
+          간편한 마크다운 문서 작성 (TEST)
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
           마크다운 문법으로 문서를 작성하고 실시간으로 미리보기를 확인하세요.
