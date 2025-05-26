@@ -1388,7 +1388,7 @@ export default function RandomPicker() {
                       </div>
 
                       <div className="space-y-1">
-                        <Label htmlFor="speed-profile">회전 속도 프로필</Label>
+                        <Label htmlFor="speed-profile">회전 속도</Label>
                         <Select
                           value={currentSpeedProfile}
                           onValueChange={(
