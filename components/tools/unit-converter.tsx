@@ -131,6 +131,13 @@ export default function UnitConverter() {
     isClient,
   ]);
 
+  // 실시간 변환을 위한 useEffect 추가
+  useEffect(() => {
+    if (isClient && inputValue) {
+      convert();
+    }
+  }, [fromUnit, toUnit, inputValue, conversionType]);
+
   const conversionUnits = {
     length: ["mm", "cm", "m", "km", "in", "ft", "yd", "mi"],
     weight: ["mg", "g", "kg", "t", "oz", "lb"],
@@ -560,7 +567,6 @@ export default function UnitConverter() {
     setFromUnit(toUnit);
     setToUnit(fromUnit);
     setInputValue(outputValue);
-    convert();
 
     // 업데이트 이벤트 기록
     addHistoryEntry("converter", "update");
@@ -718,20 +724,8 @@ export default function UnitConverter() {
                         type="number"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            convert();
-                          }
-                        }}
                       />
                     </div>
-
-                    <Button
-                      onClick={convert}
-                      className="w-full bg-amber-600 hover:bg-amber-700"
-                    >
-                      변환하기
-                    </Button>
 
                     <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                       <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
@@ -746,7 +740,7 @@ export default function UnitConverter() {
                             {unitLabels[toUnit as keyof typeof unitLabels]}
                           </>
                         ) : (
-                          "변환 버튼을 클릭하세요"
+                          "값을 입력하세요"
                         )}
                       </div>
                     </div>
