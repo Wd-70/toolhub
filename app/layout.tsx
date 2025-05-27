@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToolStateProvider } from "@/hooks/use-tool-state";
 import { PomodoroProvider } from "@/components/tools/pomodoro/PomodoroContext";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,6 +51,7 @@ export default function RootLayout({
         >
           <ToolStateProvider>
             <PomodoroProvider>{children}</PomodoroProvider>
+            <Analytics />
           </ToolStateProvider>
         </ThemeProvider>
       </body>
